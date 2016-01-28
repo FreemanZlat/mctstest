@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 2.8)
+
+set(PROJECT_NAME MCTS_Test)
+project(${PROJECT_NAME})
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+
+set(SOURCES
+    src/main.cpp
+    src/GameXO.cpp
+    src/PlayerMCTS.cpp
+    src/Sandbox.cpp
+)
+
+add_executable(${PROJECT_NAME} ${SOURCES})
