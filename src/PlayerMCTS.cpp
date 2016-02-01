@@ -21,10 +21,12 @@ PlayerMCTS::Node::Node(Node *parent, Game *game, int move) :
         moves(game->moves_get()),
         game(game->clone()),
         move(move),
-        wins(0),
         visits(0),
-        child_win(false)
+        endgame(false),
+        score(0)
 {
+    this->wins[0] = 0;
+    this->wins[1] = 0;
 }
 
 PlayerMCTS::Node::~Node()
@@ -38,116 +40,17 @@ int PlayerMCTS::move(Game *game)
 
     for (int i = 0; i < iterations; ++i)
     {
-        Node *current_node = root;
-        Game *current_game = game->clone();
-        bool current_player = game->get_player();
-
-        bool is_draw = true;
-        bool win_player = true;
-
-        while (current_node->moves.size() == 0 && current_node->children.size() > 0)
-        {
-            Node *next_node = nullptr;
-            float max_value = -100500.0f;
-            for (Node *node : current_node->children)
-            {
-                float value = (float) node->wins / (float) node->visits
-                        + sqrtf(2.0f * logf((float) current_node->visits) / (float) node->visits);
-                if (node->child_win)
-                {
-                    if (current_player == current_game->get_player())
-                    {
-                        value = -100.0f;
-                    }
-                    else
-                    {
-                        is_draw = false;
-                        win_player = !current_game->get_player();
-                        next_node = node;
-                        break;
-                    }
-                }
-                if (value > max_value)
-                {
-                    max_value = value;
-                    next_node = node;
-                }
-            }
-
-            current_node = next_node;
-            current_game->move_do(current_node->move);
-
-            if (!is_draw)
-                break;
-
-            if (current_game->is_win(!current_game->get_player()))
-            {
-                is_draw = false;
-                win_player = !current_game->get_player();
-                break;
-            }
-        }
-
-        while (is_draw)
-        {
-            if (current_node->moves.size() > 0)
-            {
-                int random_move = rand() % current_node->moves.size();
-                int move = current_node->moves[random_move];
-
-                current_node->moves[random_move] = current_node->moves.back();
-                current_node->moves.pop_back();
-
-                current_game->move_do(move);
-
-                Node *child = new Node(current_node, current_game, move);
-                current_node->children.push_back(child);
-                current_node = child;
-
-                if (current_game->is_win(!current_game->get_player()))
-                {
-                    current_node->moves.clear();
-                    is_draw = false;
-                    win_player = !current_game->get_player();
-                    current_node->parent->child_win = true;
-                    break;
-                }
-            }
-
-            std::vector<int> moves = current_game->moves_get();
-            while (moves.size() > 0)
-            {
-                current_game->move_do(moves[rand() % moves.size()]);
-                if (current_game->is_win(!current_game->get_player()))
-                {
-                    is_draw = false;
-                    win_player = !current_game->get_player();
-                    break;
-                }
-                moves = current_game->moves_get();
-            }
-
-            break;
-        }
-
-        delete current_game;
-
-        bool win = !is_draw && (win_player == current_player);
-        while (current_node != nullptr)
-        {
-            current_node->visits++;
-            current_node->wins += win ? 1 : 0;
-            current_node = current_node->parent;
-        }
+        Game *game = root->game->clone();
+        search(root, game, false);
+        delete game;
     }
 
+    int idx = root->game->get_player() ? 0 : 1;
     int move = 0;
     int max_visits = -1;
     for (Node *node : root->children)
     {
-        float value = (float) node->wins / (float) node->visits
-                + sqrtf(2.0f * logf((float) root->visits) / (float) node->visits);
-        printf("%d : %d/%d (%.4f)\n", node->move, node->wins, node->visits, value);
+        printf("%d : %d-%d / %d\n", node->move, node->wins[idx], node->wins[1 - idx], node->visits);
         if (node->visits > max_visits)
         {
             max_visits = node->visits;
@@ -155,14 +58,115 @@ int PlayerMCTS::move(Game *game)
         }
     }
 
-    KillTree(root);
+    kill_tree(root);
 
     return move;
 }
 
-void PlayerMCTS::KillTree(Node *node)
+int PlayerMCTS::search(Node *node, Game *game, bool expand)
+{
+    bool current_player = game->get_player();
+    int player_idx = current_player ? 0 : 1;
+    int result = 0;
+
+    if (game->is_win(!current_player))
+    {
+        result = -1;
+        node->endgame = true;
+        node->score = -1;
+    }
+    else if (expand)
+    {
+        std::vector<int> moves = game->moves_get();
+        while (moves.size() > 0)
+        {
+            game->move_do(moves[rand() % moves.size()]);
+            if (game->is_win(!game->get_player()))
+            {
+                result = current_player == !game->get_player() ? 1 : -1;
+                break;
+            }
+            moves = game->moves_get();
+        }
+    }
+    else if (node->moves.size() > 0 || node->children.size() > 0)
+    {
+        Node *next = nullptr;
+        bool next_expand = false;
+
+        if (node->moves.size() > 0)
+        {
+            int random_move = rand() % node->moves.size();
+            int move = node->moves[random_move];
+
+            node->moves[random_move] = node->moves.back();
+            node->moves.pop_back();
+
+            game->move_do(move);
+
+            next = new Node(node, game, move);
+            node->children.push_back(next);
+
+            next_expand = true;
+        }
+        else
+        {
+            float max_value = -100500.0f;
+            for (Node *child : node->children)
+            {
+                float value = (float) child->wins[player_idx] / (float) child->visits
+                        + sqrtf(2.0f * logf((float) node->visits) / (float) child->visits);
+                if (child->endgame)
+                {
+                    if (child->score < 0)
+                    {
+                        max_value = 100500.0f;
+                        next = child;
+
+                        node->endgame = true;
+                        node->score = 1;
+                        break;
+                    }
+                    if (child->score > 0)
+                    {
+                        value = -100.0f;
+                    }
+                }
+                if (value > max_value)
+                {
+                    max_value = value;
+                    next = child;
+                }
+            }
+
+            if (max_value < 0.0f)
+            {
+                node->endgame = true;
+                node->score = -1;
+            }
+
+            game->move_do(next->move);
+        }
+
+        result = -search(next, game, next_expand);
+    }
+    else
+    {
+        node->endgame = true;
+    }
+
+    if (result > 0)
+        node->wins[player_idx]++;
+    if (result < 0)
+        node->wins[1 - player_idx]++;
+    node->visits++;
+
+    return result;
+}
+
+void PlayerMCTS::kill_tree(Node *node)
 {
     for (Node *child : node->children)
-        KillTree(child);
+        kill_tree(child);
     delete node;
 }

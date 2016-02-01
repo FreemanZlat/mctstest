@@ -14,6 +14,7 @@ class GameXO : public Game
     bool is_win(const bool first_player);
     bool get_player();
     int eval();
+    void print();
 
  private:
     bool is_first_player_move;

@@ -22,12 +22,15 @@ class PlayerMCTS : public Player
         std::vector<int> moves;
         Game *game;
         int move;
-        int wins, visits;
-        bool child_win;
+        int wins[2];
+        int visits;
+        bool endgame;
+        int score;
 
         Node(Node *parent, Game *game, int move);
         ~Node();
     };
 
-    static void KillTree(Node *node);
+    static int search(Node *node, Game *game, bool expand);
+    static void kill_tree(Node *node);
 };

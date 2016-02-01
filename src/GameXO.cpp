@@ -1,5 +1,7 @@
 #include "GameXO.h"
 
+#include <cstdio>
+
 std::vector<unsigned char> GameXO::win_check =
         { 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 3, 6, 1, 4, 7, 2, 5, 8, 0, 4, 8, 2, 4, 6 };
 
@@ -58,4 +60,14 @@ bool GameXO::get_player()
 int GameXO::eval()
 {
     return 0;
+}
+
+void GameXO::print()
+{
+    for (int i = 0; i < 9; ++i)
+    {
+        printf("%c", ".X0"[this->board[i]]);
+        if ((i + 1) % 3 == 0)
+            printf("\n");
+    }
 }

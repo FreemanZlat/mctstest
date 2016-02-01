@@ -16,12 +16,14 @@ int Sandbox::play(Game *game, Player *player1, Player *player2)
         if (moves.size() == 0)
             break;
 
-        printf("Player%d\n", player);
+        printf("Player%d:\n", player);
 
         int move = players[player]->move(game);
         game->move_do(move);
 
-        printf("Move:%d\n\n", move);
+        printf("Move: %d\n", move);
+        game->print();
+        printf("\n");
 
         if (game->is_win(player == 0))
             return 1 + player;

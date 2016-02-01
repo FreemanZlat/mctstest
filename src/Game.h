@@ -12,4 +12,5 @@ class Game
     virtual bool is_win(const bool first_player) = 0;
     virtual bool get_player() = 0;
     virtual int eval() = 0;
+    virtual void print() = 0;
 };
