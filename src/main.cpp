@@ -3,15 +3,19 @@
 #include "Sandbox.h"
 
 #include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 int main()
 {
-    int result = Sandbox::play(new GameXO(), new PlayerMCTS(10), new PlayerMCTS(200));
+    srand((unsigned) time(nullptr));
+
+    int result = Sandbox::play(new GameXO(), new PlayerMCTS(2000), new PlayerMCTS(2000));
     if (result == 0)
         printf("Draw!\n");
     else if (result == 1)
-        printf("PlayerMCTS(10)\n");
+        printf("Player0\n");
     else
-        printf("PlayerMCTS(200)\n");
+        printf("Player1\n");
     return 0;
 }

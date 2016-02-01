@@ -9,14 +9,16 @@ GameXO::GameXO() :
     this->board.resize(9, 0);
 }
 
-GameXO::GameXO(const GameXO &game) :
-        is_first_player_move(game.is_first_player_move),
-        board(game.board)
+GameXO::~GameXO()
 {
 }
 
-GameXO::~GameXO()
+Game* GameXO::clone()
 {
+    GameXO *game = new GameXO();
+    game->is_first_player_move = this->is_first_player_move;
+    game->board = this->board;
+    return game;
 }
 
 std::vector<int> GameXO::moves_get()
@@ -42,9 +44,15 @@ bool GameXO::is_win(const bool first_player)
 {
     int player = first_player ? 1 : 2;
     for (int i = 0; i < 8; ++i)
-        if (win_check[i * 3] == player && win_check[i * 3 + 1] == player && win_check[i * 3 + 2] == player)
+        if (this->board[win_check[i * 3]] == player && this->board[win_check[i * 3 + 1]] == player
+                && this->board[win_check[i * 3 + 2]] == player)
             return true;
     return false;
+}
+
+bool GameXO::get_player()
+{
+    return this->is_first_player_move;
 }
 
 int GameXO::eval()

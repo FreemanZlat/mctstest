@@ -6,12 +6,13 @@ class GameXO : public Game
 {
  public:
     GameXO();
-    GameXO(const GameXO &game);
     virtual ~GameXO();
 
+    Game* clone();
     std::vector<int> moves_get();
     void move_do(const int move);
     bool is_win(const bool first_player);
+    bool get_player();
     int eval();
 
  private:
