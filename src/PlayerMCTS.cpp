@@ -19,7 +19,6 @@ PlayerMCTS::~PlayerMCTS()
 PlayerMCTS::Node::Node(Node *parent, Game *game, int move) :
         parent(parent),
         moves(game->moves_get()),
-        game(game->clone()),
         move(move),
         visits(0),
         endgame(false),
@@ -31,7 +30,6 @@ PlayerMCTS::Node::Node(Node *parent, Game *game, int move) :
 
 PlayerMCTS::Node::~Node()
 {
-    delete game;
 }
 
 int PlayerMCTS::move(Game *game)
@@ -40,12 +38,12 @@ int PlayerMCTS::move(Game *game)
 
     for (int i = 0; i < iterations; ++i)
     {
-        Game *game = root->game->clone();
-        search(root, game, false);
-        delete game;
+        Game *root_game = game->clone();
+        search(root, root_game, false);
+        delete root_game;
     }
 
-    int idx = root->game->get_player() ? 0 : 1;
+    int idx = game->get_player() ? 0 : 1;
     int move = 0;
     int max_visits = -1;
     for (Node *node : root->children)
@@ -69,7 +67,7 @@ int PlayerMCTS::search(Node *node, Game *game, bool expand)
     int player_idx = current_player ? 0 : 1;
     int result = 0;
 
-    if (game->is_win(!current_player))
+    if (game->is_win())
     {
         result = -1;
         node->endgame = true;
@@ -81,9 +79,9 @@ int PlayerMCTS::search(Node *node, Game *game, bool expand)
         while (moves.size() > 0)
         {
             game->move_do(moves[rand() % moves.size()]);
-            if (game->is_win(!game->get_player()))
+            if (game->is_win())
             {
-                result = current_player == !game->get_player() ? 1 : -1;
+                result = current_player != game->get_player() ? 1 : -1;
                 break;
             }
             moves = game->moves_get();

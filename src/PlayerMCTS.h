@@ -20,7 +20,6 @@ class PlayerMCTS : public Player
         Node *parent;
         std::vector<Node*> children;
         std::vector<int> moves;
-        Game *game;
         int move;
         int wins[2];
         int visits;

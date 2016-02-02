@@ -23,7 +23,7 @@ Game* GameXO::clone()
     return game;
 }
 
-std::vector<int> GameXO::moves_get()
+std::vector<int> GameXO::moves_get(bool sorted)
 {
     std::vector<int> moves;
     for (int i = 0; i < 9; ++i)
@@ -42,9 +42,19 @@ void GameXO::move_do(const int move)
     this->is_first_player_move = !is_first_player_move;
 }
 
-bool GameXO::is_win(const bool first_player)
+void GameXO::move_undo(const int move)
 {
-    int player = first_player ? 1 : 2;
+    if (move < 0 || move > 8 || this->board[move] == 0)
+    {
+    }
+
+    this->board[move] = 0;
+    this->is_first_player_move = !is_first_player_move;
+}
+
+bool GameXO::is_win()
+{
+    int player = !this->is_first_player_move ? 1 : 2;
     for (int i = 0; i < 8; ++i)
         if (this->board[win_check[i * 3]] == player && this->board[win_check[i * 3 + 1]] == player
                 && this->board[win_check[i * 3 + 2]] == player)

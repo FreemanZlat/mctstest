@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
 set(SOURCES
     src/main.cpp
     src/GameXO.cpp
+    src/GameXO_4x4x4.cpp
     src/PlayerMCTS.cpp
     src/Sandbox.cpp
 )

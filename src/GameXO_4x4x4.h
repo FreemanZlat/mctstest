@@ -2,11 +2,11 @@
 
 #include "Game.h"
 
-class GameXO : public Game
+class GameXO_4x4x4 : public Game
 {
  public:
-    GameXO();
-    virtual ~GameXO();
+    GameXO_4x4x4();
+    virtual ~GameXO_4x4x4();
 
     Game* clone();
     std::vector<int> moves_get(bool sorted);
@@ -20,5 +20,11 @@ class GameXO : public Game
  private:
     bool is_first_player_move;
     std::vector<unsigned char> board;
-    static std::vector<unsigned char> win_check;
+    std::vector<unsigned char> history;
+    static std::vector<std::vector<unsigned char>> check_lines;
+    static std::vector<std::vector<int>> win_check;
+    static struct _init
+    {
+        _init();
+    } _initializer;
 };

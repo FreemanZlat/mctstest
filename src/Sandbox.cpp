@@ -25,7 +25,7 @@ int Sandbox::play(Game *game, Player *player1, Player *player2)
         game->print();
         printf("\n");
 
-        if (game->is_win(player == 0))
+        if (game->is_win())
             return 1 + player;
 
         player = 1 - player;
