@@ -1,9 +1,12 @@
 #include "GameXO.h"
 
+#include <algorithm>
 #include <cstdio>
 
 std::vector<unsigned char> GameXO::win_check =
         { 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 3, 6, 1, 4, 7, 2, 5, 8, 0, 4, 8, 2, 4, 6 };
+
+std::vector<int> GameXO::eval_pst = { 11, 10, 11, 10, 12, 10, 11, 10, 11 };
 
 GameXO::GameXO() :
         is_first_player_move(true)
@@ -29,6 +32,13 @@ std::vector<int> GameXO::moves_get(bool sorted)
     for (int i = 0; i < 9; ++i)
         if (this->board[i] == 0)
             moves.push_back(i);
+
+    if (sorted)
+        std::sort(moves.begin(), moves.end(), [](int a, int b)
+        {
+            return eval_pst[b] < eval_pst[a];
+        });
+
     return moves;
 }
 
@@ -69,7 +79,14 @@ bool GameXO::get_player()
 
 int GameXO::eval()
 {
-    return 0;
+    int resX = 0, resO = 0;
+    for (int i = 0; i < 9; ++i)
+        if (this->board[i] == 1)
+            resX += eval_pst[i];
+        else if (this->board[i])
+            resO += eval_pst[i];
+    int res = resX - resO;
+    return this->is_first_player_move ? res : -res;
 }
 
 void GameXO::print()

@@ -4,6 +4,9 @@
 
 std::vector<std::vector<unsigned char>> GameXO_4x4x4::check_lines;
 std::vector<std::vector<int>> GameXO_4x4x4::win_check;
+std::vector<int> GameXO_4x4x4::eval_pst = { 12, 11, 11, 12, 11, 10, 10, 11, 11, 10, 10, 11, 12, 11, 11, 12, 11, 10, 10,
+        11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10, 10, 11, 11, 10, 10, 11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10, 10,
+        11, 12, 11, 11, 12, 11, 10, 10, 11, 11, 10, 10, 11, 12, 11, 11, 12 };
 GameXO_4x4x4::_init GameXO_4x4x4::_initializer;
 
 GameXO_4x4x4::_init::_init()
@@ -153,7 +156,14 @@ bool GameXO_4x4x4::get_player()
 
 int GameXO_4x4x4::eval()
 {
-    return 0;
+    int resX = 0, resO = 0;
+    for (int i = 0; i < 64; ++i)
+        if (this->board[i] == 1)
+            resX += eval_pst[i];
+        else if (this->board[i])
+            resO += eval_pst[i];
+    int res = resX - resO;
+    return this->is_first_player_move ? res : -res;
 }
 
 void GameXO_4x4x4::print()

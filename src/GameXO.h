@@ -21,4 +21,5 @@ class GameXO : public Game
     bool is_first_player_move;
     std::vector<unsigned char> board;
     static std::vector<unsigned char> win_check;
+    static std::vector<int> eval_pst;
 };

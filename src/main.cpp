@@ -2,6 +2,8 @@
 #include "GameXO.h"
 #include "GameXO_4x4x4.h"
 #include "Player.h"
+#include "PlayerAB.h"
+#include "PlayerMinimax.h"
 #include "PlayerMCTS.h"
 #include "Sandbox.h"
 
@@ -32,16 +34,15 @@ struct Plr
     }
 };
 
-int main()
+static void tournament()
 {
-    srand((unsigned) time(nullptr));
-
     Game *game = new GameXO_4x4x4();
 
-    const std::vector<int> iters = { 10000, 50000, 100000, 500000 };
+    const std::vector<Player*> players = { new PlayerMCTS(10000), new PlayerMCTS(50000), new PlayerAB(3), new PlayerAB(
+            4), new PlayerAB(5) };
     std::vector<Plr*> plrs;
-    for (int i = 0; i < iters.size(); ++i)
-        plrs.push_back(new Plr(i, new PlayerMCTS(iters[i]), iters.size()));
+    for (int i = 0; i < players.size(); ++i)
+        plrs.push_back(new Plr(i, players[i], players.size()));
 
     while (true)
     {
@@ -52,7 +53,7 @@ int main()
 
                 int result = Sandbox::play(current_game, plrs[i]->player, plrs[j]->player, false);
 
-//                printf("Game %d x %d : %d\n", plrs[i]->id, plrs[j]->id, result);
+                printf("Game %d x %d : %d\n", plrs[i]->id, plrs[j]->id, result);
 
                 if (result == 1)
                 {
@@ -101,13 +102,34 @@ int main()
 
     for (int i = 0; i < plrs.size(); ++i)
         delete plrs[i];
+}
 
-//    int result = Sandbox::play(new GameXO_4x4x4(), new PlayerMCTS(10000), new PlayerMCTS(10000), false);
-//    if (result == 0)
-//        printf("Draw!\n");
-//    else if (result == 1)
-//        printf("Player0 win!!\n");
-//    else
-//        printf("Player1 win!!\n");
+static void test()
+{
+    Game *game = new GameXO_4x4x4();
+    Player *player2 = new PlayerAB(5);
+    Player *player1 = new PlayerMinimax(4);
+
+    int result = Sandbox::play(game, player1, player2, true);
+
+    delete game;
+    delete player1;
+    delete player2;
+
+    if (result == 0)
+        printf("Draw!\n");
+    else if (result == 1)
+        printf("Player0 win!!\n");
+    else
+        printf("Player1 win!!\n");
+}
+
+int main()
+{
+    srand((unsigned) time(nullptr));
+
+//    test();
+    tournament();
+
     return 0;
 }

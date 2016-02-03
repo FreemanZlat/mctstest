@@ -23,6 +23,7 @@ class GameXO_4x4x4 : public Game
     std::vector<unsigned char> history;
     static std::vector<std::vector<unsigned char>> check_lines;
     static std::vector<std::vector<int>> win_check;
+    static std::vector<int> eval_pst;
     static struct _init
     {
         _init();
