@@ -32,29 +32,41 @@ PlayerMCTS::Node::~Node()
 {
 }
 
-int PlayerMCTS::move(Game *game)
+int PlayerMCTS::move(Game *game, bool print_info)
 {
     Node *root = new Node(nullptr, game, -1);
 
     for (int i = 0; i < iterations; ++i)
     {
         Game *root_game = game->clone();
+//        root->endgame = false;
+//        root->score = 0;
         search(root, root_game, false);
         delete root_game;
     }
 
     int idx = game->get_player() ? 0 : 1;
     int move = 0;
+    Node *move_node = nullptr;
     int max_visits = -1;
+    int sum_visits = 0;
     for (Node *node : root->children)
     {
-        printf("%d : %d-%d / %d\n", node->move, node->wins[idx], node->wins[1 - idx], node->visits);
+        if (print_info)
+            printf("%3d : %d-%d-%d / %d\n", node->move, node->wins[idx], node->wins[1 - idx],
+                   node->visits - node->wins[idx] - node->wins[1 - idx], node->visits);
+        sum_visits += node->visits;
         if (node->visits > max_visits)
         {
             max_visits = node->visits;
             move = node->move;
+            move_node = node;
         }
     }
+
+    if (print_info)
+        printf("Move=%d  %d-%d-%d / %d (%d)\n", move, move_node->wins[idx], move_node->wins[1 - idx],
+               move_node->visits - move_node->wins[idx] - move_node->wins[1 - idx], move_node->visits, sum_visits);
 
     kill_tree(root);
 
@@ -67,7 +79,11 @@ int PlayerMCTS::search(Node *node, Game *game, bool expand)
     int player_idx = current_player ? 0 : 1;
     int result = 0;
 
-    if (game->is_win())
+    if (node->endgame)
+    {
+        result = node->score;
+    }
+    else if (game->is_win())
     {
         result = -1;
         node->endgame = true;
@@ -127,7 +143,7 @@ int PlayerMCTS::search(Node *node, Game *game, bool expand)
                     }
                     if (child->score > 0)
                     {
-                        value = -100.0f;
+                        value -= 100000.0f;
                     }
                 }
                 if (value > max_value)

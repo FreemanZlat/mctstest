@@ -10,7 +10,7 @@ class PlayerMCTS : public Player
     PlayerMCTS(int iterations);
     virtual ~PlayerMCTS();
 
-    int move(Game *game);
+    int move(Game *game, bool print_info);
 
  private:
     int iterations;

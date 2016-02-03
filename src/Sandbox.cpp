@@ -5,7 +5,7 @@
 
 #include <cstdio>
 
-int Sandbox::play(Game *game, Player *player1, Player *player2)
+int Sandbox::play(Game *game, Player *player1, Player *player2, bool print_info)
 {
     std::vector<Player*> players = { player1, player2 };
     int player = 0;
@@ -16,14 +16,17 @@ int Sandbox::play(Game *game, Player *player1, Player *player2)
         if (moves.size() == 0)
             break;
 
-        printf("Player%d:\n", player);
+        if (print_info)
+            printf("Player%d:\n", player);
 
-        int move = players[player]->move(game);
+        int move = players[player]->move(game, print_info);
         game->move_do(move);
 
-        printf("Move: %d\n", move);
-        game->print();
-        printf("\n");
+        if (print_info)
+        {
+            game->print();
+            printf("\n");
+        }
 
         if (game->is_win())
             return 1 + player;
