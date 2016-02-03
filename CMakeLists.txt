@@ -14,6 +14,8 @@ set(SOURCES
     src/PlayerMinimax.cpp
     src/PlayerMCTS.cpp
     src/Sandbox.cpp
+    src/Tournament.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
+target_link_libraries(${PROJECT_NAME} pthread)
