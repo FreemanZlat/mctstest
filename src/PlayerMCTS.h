@@ -7,13 +7,14 @@
 class PlayerMCTS : public Player
 {
  public:
-    PlayerMCTS(int iterations);
+    PlayerMCTS(int move_duration_ms, int iterations_max);
     virtual ~PlayerMCTS();
 
     int move(Game *game, bool print_info);
 
  private:
-    int iterations;
+    int move_duration_ms;
+    int iterations_max;
 
     struct Node
     {

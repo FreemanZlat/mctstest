@@ -14,6 +14,7 @@ class Tournament
     void play(int rounds = 10, int threads = 1, bool print_info = true);
     void print_result();
     static void test(Game *game, Player *player1, Player *player2);
+    static int play(Game *game, Player *player1, Player *player2, bool print_info);
 
  private:
     struct PlayerInfo
@@ -47,5 +48,5 @@ class Tournament
     void play_games(Game *game, bool print_info);
     std::pair<int, int> get_game();
     void play_game(Game *game, int i, int j, bool print_info);
-    void thread_func(unsigned  int seed, Game *game, bool print_info);
+    void thread_func(unsigned int seed, Game *game, bool print_info);
 };

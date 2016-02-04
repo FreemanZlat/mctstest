@@ -1,14 +1,16 @@
 #include "PlayerMCTS.h"
 
 #include "Game.h"
+#include "Utils.h"
 
 #include <cstdlib>
 #include <cmath>
 
 #include <cstdio>
 
-PlayerMCTS::PlayerMCTS(int iterations) :
-        iterations(iterations)
+PlayerMCTS::PlayerMCTS(int move_duration_ms, int iterations_max) :
+        move_duration_ms(move_duration_ms),
+        iterations_max(iterations_max)
 {
 }
 
@@ -34,15 +36,20 @@ PlayerMCTS::Node::~Node()
 
 int PlayerMCTS::move(Game *game, bool print_info)
 {
+    Utils::Timer timer;
+
     Node *root = new Node(nullptr, game, -1);
 
-    for (int i = 0; i < iterations; ++i)
+    for (int i = 0; i < this->iterations_max; ++i)
     {
         Game *root_game = game->clone();
-//        root->endgame = false;
-//        root->score = 0;
+        root->endgame = false;
+        root->score = 0;
         search(root, root_game, false);
         delete root_game;
+
+        if (timer.get() >= this->move_duration_ms)
+            break;
     }
 
     int idx = game->get_player() ? 0 : 1;

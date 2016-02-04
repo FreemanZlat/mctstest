@@ -12,11 +12,12 @@ int main()
 {
     srand((unsigned) time(nullptr));
 
-    Tournament tournament(new GameXO_4x4x4(), { new PlayerMCTS(5000), new PlayerMCTS(10000), new PlayerAB(3),
-                                  new PlayerAB(4) });
+    Tournament tournament(new GameXO_4x4x4(), { new PlayerMCTS(500, 10000000), new PlayerMCTS(1000, 10000000),
+                                  new PlayerMinimax(500, 64), new PlayerMinimax(1000, 64), new PlayerAB(500, 64),
+                                  new PlayerAB(1000, 64) });
     tournament.play(10, 4, true);
 
-//    Tournament::test(new GameXO_4x4x4(), new PlayerAB(5), new PlayerMinimax(4));
+//    Tournament::test(new GameXO_4x4x4(), new PlayerMCTS(1000, 10000000), new PlayerAB(1000, 64));
 
     return 0;
 }

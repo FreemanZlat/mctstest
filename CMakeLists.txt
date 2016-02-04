@@ -13,8 +13,8 @@ set(SOURCES
     src/PlayerAB.cpp
     src/PlayerMinimax.cpp
     src/PlayerMCTS.cpp
-    src/Sandbox.cpp
     src/Tournament.cpp
+    src/Utils.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

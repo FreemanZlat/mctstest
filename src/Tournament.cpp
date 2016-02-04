@@ -1,7 +1,5 @@
 #include "Tournament.h"
 
-#include "Sandbox.h"
-
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -71,7 +69,7 @@ void Tournament::print_result()
 
 void Tournament::test(Game *game, Player *player1, Player *player2)
 {
-    int result = Sandbox::play(game, player1, player2, true);
+    int result = play(game, player1, player2, true);
 
     delete game;
     delete player1;
@@ -83,6 +81,38 @@ void Tournament::test(Game *game, Player *player1, Player *player2)
         printf("Player0 win!!\n");
     else
         printf("Player1 win!!\n");
+}
+
+int Tournament::play(Game *game, Player *player1, Player *player2, bool print_info)
+{
+    std::vector<Player*> players = { player1, player2 };
+    int player = 0;
+
+    while (true)
+    {
+        std::vector<int> moves = game->moves_get();
+        if (moves.size() == 0)
+            break;
+
+        if (print_info)
+            printf("Player%d:\n", player);
+
+        int move = players[player]->move(game, print_info);
+        game->move_do(move);
+
+        if (print_info)
+        {
+            game->print();
+            printf("\n");
+        }
+
+        if (game->is_win())
+            return 1 + player;
+
+        player = 1 - player;
+    }
+
+    return 0;
 }
 
 void Tournament::play_games(Game *game, int threads, bool print_info)
@@ -134,7 +164,7 @@ void Tournament::play_game(Game *game, int i, int j, bool print_info)
 {
     Game *current_game = game->clone();
 
-    int result = Sandbox::play(current_game, this->stats[i]->player, this->stats[j]->player, false);
+    int result = play(current_game, this->stats[i]->player, this->stats[j]->player, false);
 
     this->mutex2.lock();
 
