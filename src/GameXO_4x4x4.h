@@ -19,7 +19,7 @@ class GameXO_4x4x4 : public Game
 
  private:
     bool is_first_player_move;
-    std::vector<uint8_t> board;
+    uint64_t _board[2];
     std::vector<uint8_t> history;
     static std::vector<std::vector<uint8_t>> check_lines;
     static std::vector<std::vector<uint8_t>> win_check;

@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 
 PlayerAB::PlayerAB(uint32_t move_duration_ms, uint32_t max_depth) :
         move_duration_ms(move_duration_ms),

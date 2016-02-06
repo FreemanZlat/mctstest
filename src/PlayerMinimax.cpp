@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 
 PlayerMinimax::PlayerMinimax(uint32_t move_duration_ms, uint32_t max_depth) :
         move_duration_ms(move_duration_ms),
