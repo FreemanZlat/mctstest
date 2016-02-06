@@ -26,12 +26,18 @@ uint32_t PlayerAB::move(Game *game, bool print_info)
     std::vector<uint32_t> moves = game->moves_get(false);
     std::vector<std::pair<uint32_t, int32_t>> moves_scores;
     for (uint32_t move : moves)
-        moves_scores.push_back(std::make_pair(move, 0));
+        moves_scores.push_back(std::make_pair(move, rand() % 1000));
 
     uint32_t nodes = 1;
     bool aborted = false;
     for (uint32_t d = 0; d < this->max_depth; ++d)
     {
+        std::sort(moves_scores.begin(), moves_scores.end(),
+                  [](std::pair<uint32_t, int32_t> a, std::pair<uint32_t, int32_t> b)
+                  {
+                      return b.second < a.second;
+                  });
+
         int32_t max = -100000;
         for (auto &move : moves_scores)
         {
@@ -55,12 +61,6 @@ uint32_t PlayerAB::move(Game *game, bool print_info)
 
         if (aborted)
             break;
-
-        std::sort(moves_scores.begin(), moves_scores.end(),
-                  [](std::pair<uint32_t, int32_t> a, std::pair<uint32_t, int32_t> b)
-                  {
-                      return b.second < a.second;
-                  });
     }
 
     if (print_info)
@@ -70,7 +70,7 @@ uint32_t PlayerAB::move(Game *game, bool print_info)
 }
 
 int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t beta, Game *game, uint32_t &nodes,
-                     bool &aborted, Utils::Timer &timer, const uint32_t move_duration_ms)
+                         bool &aborted, Utils::Timer &timer, const uint32_t move_duration_ms)
 {
     if ((++nodes % 100000) == 0 && timer.get() >= move_duration_ms)
     {

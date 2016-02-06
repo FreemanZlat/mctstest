@@ -25,14 +25,19 @@ uint32_t PlayerMinimax::move(Game *game, bool print_info)
     std::vector<uint32_t> moves = game->moves_get(false);
     std::vector<std::pair<uint32_t, int32_t>> moves_scores;
     for (uint32_t move : moves)
-        moves_scores.push_back(std::make_pair(move, 0));
+        moves_scores.push_back(std::make_pair(move, rand() % 1000));
 
     uint32_t nodes = 1;
     bool aborted = false;
     for (uint32_t d = 0; d < this->max_depth; ++d)
     {
-        int32_t max = -100000;
+        std::sort(moves_scores.begin(), moves_scores.end(),
+                  [](std::pair<uint32_t, int32_t> a, std::pair<uint32_t, int32_t> b)
+                  {
+                      return b.second < a.second;
+                  });
 
+        int32_t max = -100000;
         for (auto &move : moves_scores)
         {
             game->move_do(move.first);
@@ -54,12 +59,6 @@ uint32_t PlayerMinimax::move(Game *game, bool print_info)
         }
         if (aborted)
             break;
-
-        std::sort(moves_scores.begin(), moves_scores.end(),
-                  [](std::pair<uint32_t, int32_t> a, std::pair<uint32_t, int32_t> b)
-                  {
-                      return b.second < a.second;
-                  });
     }
 
     if (print_info)

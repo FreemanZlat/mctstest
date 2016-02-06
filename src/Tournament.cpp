@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
-#include <ctime>
 #include <thread>
 
 Tournament::Tournament(Game *game, std::vector<Player*> players) :
@@ -118,9 +117,8 @@ uint8_t Tournament::play(Game *game, Player *player1, Player *player2, bool prin
 void Tournament::play_games(Game *game, uint8_t threads, bool print_info)
 {
     std::vector<std::thread*> threads_pool;
-    uint32_t current_time = time(nullptr);
     for (uint8_t i = 1; i < threads; ++i)
-        threads_pool.push_back(new std::thread(&Tournament::thread_func, this, current_time + i, game, print_info));
+        threads_pool.push_back(new std::thread(&Tournament::thread_func, this, rand() + i, game, print_info));
 
     this->play_games(game, print_info);
 
