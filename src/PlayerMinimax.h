@@ -8,15 +8,15 @@
 class PlayerMinimax : public Player
 {
  public:
-    PlayerMinimax(int move_duration_ms, int max_depth);
+    PlayerMinimax(uint32_t move_duration_ms, uint32_t max_depth);
     virtual ~PlayerMinimax();
 
-    int move(Game *game, bool print_info);
+    uint32_t move(Game *game, bool print_info);
 
  private:
-    int move_duration_ms;
-    int max_depth;
+    uint32_t move_duration_ms;
+    uint32_t max_depth;
 
-    static int search(int depth, int ply, Game *game, int &nodes, bool &aborted, Utils::Timer &timer,
-                      const int move_duration_ms);
+    static int32_t search(uint32_t depth, uint32_t ply, Game *game, uint32_t &nodes, bool &aborted, Utils::Timer &timer,
+                          const uint32_t move_duration_ms);
 };

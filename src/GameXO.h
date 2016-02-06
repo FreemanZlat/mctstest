@@ -9,17 +9,17 @@ class GameXO : public Game
     virtual ~GameXO();
 
     Game* clone();
-    std::vector<int> moves_get(bool sorted);
-    void move_do(const int move);
-    void move_undo(const int move);
+    std::vector<uint32_t> moves_get(bool sorted);
+    void move_do(const uint32_t move);
+    void move_undo(const uint32_t move);
     bool is_win();
     bool get_player();
-    int eval();
+    int32_t eval();
     void print();
 
  private:
     bool is_first_player_move;
-    std::vector<unsigned char> board;
-    static std::vector<unsigned char> win_check;
-    static std::vector<int> eval_pst;
+    std::vector<uint8_t> board;
+    static std::vector<uint8_t> win_check;
+    static std::vector<int8_t> eval_pst;
 };

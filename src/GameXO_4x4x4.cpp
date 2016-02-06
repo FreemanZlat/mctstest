@@ -2,22 +2,22 @@
 
 #include <cstdio>
 
-std::vector<std::vector<unsigned char>> GameXO_4x4x4::check_lines;
-std::vector<std::vector<int>> GameXO_4x4x4::win_check;
-std::vector<int> GameXO_4x4x4::eval_pst = { 12, 11, 11, 12, 11, 10, 10, 11, 11, 10, 10, 11, 12, 11, 11, 12, 11, 10, 10,
-        11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10, 10, 11, 11, 10, 10, 11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10, 10,
-        11, 12, 11, 11, 12, 11, 10, 10, 11, 11, 10, 10, 11, 12, 11, 11, 12 };
+std::vector<std::vector<uint8_t>> GameXO_4x4x4::check_lines;
+std::vector<std::vector<uint8_t>> GameXO_4x4x4::win_check;
+std::vector<int8_t> GameXO_4x4x4::eval_pst = { 12, 11, 11, 12, 11, 10, 10, 11, 11, 10, 10, 11, 12, 11, 11, 12, 11, 10,
+        10, 11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10, 10, 11, 11, 10, 10, 11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10,
+        10, 11, 12, 11, 11, 12, 11, 10, 10, 11, 11, 10, 10, 11, 12, 11, 11, 12 };
 GameXO_4x4x4::_init GameXO_4x4x4::_initializer;
 
 GameXO_4x4x4::_init::_init()
 {
     win_check.resize(64);
 
-    for (int x = 0; x < 4; ++x)
-        for (int y = 0; y < 4; ++y)
+    for (uint8_t x = 0; x < 4; ++x)
+        for (uint8_t y = 0; y < 4; ++y)
         {
-            std::vector<unsigned char> line1, line2, line3;
-            for (int z = 0; z < 4; ++z)
+            std::vector<uint8_t> line1, line2, line3;
+            for (uint8_t z = 0; z < 4; ++z)
             {
                 line1.push_back(x * 16 + y * 4 + z);
                 line2.push_back(x * 16 + z * 4 + y);
@@ -31,10 +31,10 @@ GameXO_4x4x4::_init::_init()
             check_lines.push_back(line3);
         }
 
-    for (int x = 0; x < 4; ++x)
+    for (uint8_t x = 0; x < 4; ++x)
     {
-        std::vector<unsigned char> diag1a, diag1b, diag2a, diag2b, diag3a, diag3b;
-        for (int y = 0; y < 4; ++y)
+        std::vector<uint8_t> diag1a, diag1b, diag2a, diag2b, diag3a, diag3b;
+        for (uint8_t y = 0; y < 4; ++y)
         {
             diag1a.push_back(x * 16 + y * 4 + y);
             diag1b.push_back(x * 16 + y * 4 + (3 - y));
@@ -57,8 +57,8 @@ GameXO_4x4x4::_init::_init()
         check_lines.push_back(diag3b);
     }
 
-    std::vector<unsigned char> diag1, diag2, diag3, diag4;
-    for (int x = 0; x < 4; ++x)
+    std::vector<uint8_t> diag1, diag2, diag3, diag4;
+    for (uint8_t x = 0; x < 4; ++x)
     {
         diag1.push_back(x * 16 + x * 4 + x);
         diag2.push_back(x * 16 + x * 4 + (3 - x));
@@ -79,6 +79,7 @@ GameXO_4x4x4::GameXO_4x4x4() :
         is_first_player_move(true)
 {
     this->board.resize(64, 0);
+    this->history.reserve(64);
 }
 
 GameXO_4x4x4::~GameXO_4x4x4()
@@ -94,16 +95,17 @@ Game* GameXO_4x4x4::clone()
     return game;
 }
 
-std::vector<int> GameXO_4x4x4::moves_get(bool sorted)
+std::vector<uint32_t> GameXO_4x4x4::moves_get(bool sorted)
 {
-    std::vector<int> moves;
-    for (int i = 0; i < 64; ++i)
+    std::vector<uint32_t> moves;
+    moves.reserve(64);
+    for (uint8_t i = 0; i < 64; ++i)
         if (this->board[i] == 0)
             moves.push_back(i);
     return moves;
 }
 
-void GameXO_4x4x4::move_do(const int move)
+void GameXO_4x4x4::move_do(const uint32_t move)
 {
     if (move < 0 || move > 63 || this->board[move] != 0)
     {
@@ -114,7 +116,7 @@ void GameXO_4x4x4::move_do(const int move)
     this->is_first_player_move = !is_first_player_move;
 }
 
-void GameXO_4x4x4::move_undo(const int move)
+void GameXO_4x4x4::move_undo(const uint32_t move)
 {
     if (move < 0 || move > 63 || this->board[move] == 0 || this->history.size() == 0 || this->history.back() != move)
     {
@@ -130,10 +132,10 @@ bool GameXO_4x4x4::is_win()
     if (this->history.size() == 0)
         return false;
 
-    int player = !this->is_first_player_move ? 1 : 2;
-    int move = this->history.back();
+    uint32_t player = !this->is_first_player_move ? 1 : 2;
+    uint32_t move = this->history.back();
 
-    for (int idx : win_check[move])
+    for (uint8_t idx : win_check[move])
     {
         bool win = true;
         for (auto pos : check_lines[idx])
@@ -154,25 +156,25 @@ bool GameXO_4x4x4::get_player()
     return this->is_first_player_move;
 }
 
-int GameXO_4x4x4::eval()
+int32_t GameXO_4x4x4::eval()
 {
-    int resX = 0, resO = 0;
-    for (int i = 0; i < 64; ++i)
+    int32_t resX = 0, resO = 0;
+    for (uint8_t i = 0; i < 64; ++i)
         if (this->board[i] == 1)
             resX += eval_pst[i];
         else if (this->board[i])
             resO += eval_pst[i];
-    int res = resX - resO;
+    int32_t res = resX - resO;
     return this->is_first_player_move ? res : -res;
 }
 
 void GameXO_4x4x4::print()
 {
-    for (int y = 0; y < 4; ++y)
+    for (uint8_t y = 0; y < 4; ++y)
     {
-        for (int x = 0; x < 4; ++x)
+        for (uint8_t x = 0; x < 4; ++x)
         {
-            for (int z = 0; z < 4; ++z)
+            for (uint8_t z = 0; z < 4; ++z)
                 printf("%c", ".X0"[this->board[x * 16 + y * 4 + z]]);
             printf(" ");
         }

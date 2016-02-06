@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cstdio>
 
-PlayerMinimax::PlayerMinimax(int move_duration_ms, int max_depth) :
+PlayerMinimax::PlayerMinimax(uint32_t move_duration_ms, uint32_t max_depth) :
         move_duration_ms(move_duration_ms),
         max_depth(max_depth)
 {
@@ -15,23 +15,23 @@ PlayerMinimax::~PlayerMinimax()
 {
 }
 
-int PlayerMinimax::move(Game *game, bool print_info)
+uint32_t PlayerMinimax::move(Game *game, bool print_info)
 {
     Utils::Timer timer;
 
-    int result = 0;
-    int result_score = 0;
+    uint32_t result = 0;
+    int32_t result_score = 0;
 
-    std::vector<int> moves = game->moves_get(false);
-    std::vector<std::pair<int, int>> moves_scores;
-    for (int move : moves)
+    std::vector<uint32_t> moves = game->moves_get(false);
+    std::vector<std::pair<uint32_t, int32_t>> moves_scores;
+    for (uint32_t move : moves)
         moves_scores.push_back(std::make_pair(move, 0));
 
-    int nodes = 1;
+    uint32_t nodes = 1;
     bool aborted = false;
-    for (int d = 0; d < this->max_depth; ++d)
+    for (uint32_t d = 0; d < this->max_depth; ++d)
     {
-        int max = -100000;
+        int32_t max = -100000;
 
         for (auto &move : moves_scores)
         {
@@ -55,10 +55,11 @@ int PlayerMinimax::move(Game *game, bool print_info)
         if (aborted)
             break;
 
-        std::sort(moves_scores.begin(), moves_scores.end(), [](std::pair<int, int> a, std::pair<int, int> b)
-        {
-            return b.second < a.second;
-        });
+        std::sort(moves_scores.begin(), moves_scores.end(),
+                  [](std::pair<uint32_t, int32_t> a, std::pair<uint32_t, int32_t> b)
+                  {
+                      return b.second < a.second;
+                  });
     }
 
     if (print_info)
@@ -67,10 +68,10 @@ int PlayerMinimax::move(Game *game, bool print_info)
     return result;
 }
 
-int PlayerMinimax::search(int depth, int ply, Game *game, int &nodes, bool &aborted, Utils::Timer &timer,
-                          const int move_duration_ms)
+int32_t PlayerMinimax::search(uint32_t depth, uint32_t ply, Game *game, uint32_t &nodes, bool &aborted,
+                              Utils::Timer &timer, const uint32_t move_duration_ms)
 {
-    if (nodes++ % 100000 && timer.get() >= move_duration_ms)
+    if ((++nodes % 100000) == 0 && timer.get() >= move_duration_ms)
     {
         aborted = true;
         return 0;
@@ -81,13 +82,12 @@ int PlayerMinimax::search(int depth, int ply, Game *game, int &nodes, bool &abor
     if (depth == 0)
         return game->eval();
 
-    std::vector<int> moves = game->moves_get(false);
+    std::vector<uint32_t> moves = game->moves_get(false);
     if (moves.size() == 0)
         return 0;
 
-    int max = -100000;
-    int result = 0;
-    for (int move : moves)
+    int32_t max = -100000;
+    for (uint32_t move : moves)
     {
         game->move_do(move);
         int value = -search(depth - 1, ply + 1, game, nodes, aborted, timer, move_duration_ms);
@@ -97,10 +97,7 @@ int PlayerMinimax::search(int depth, int ply, Game *game, int &nodes, bool &abor
             return 0;
 
         if (value > max)
-        {
             max = value;
-            result = move;
-        }
     }
 
     return max;

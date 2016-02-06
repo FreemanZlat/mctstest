@@ -9,7 +9,7 @@
 Tournament::Tournament(Game *game, std::vector<Player*> players) :
         game(game)
 {
-    for (int i = 0; i < players.size(); ++i)
+    for (uint8_t i = 0; i < players.size(); ++i)
         this->stats.push_back(new PlayerInfo(i, players[i], players.size()));
 }
 
@@ -20,15 +20,15 @@ Tournament::~Tournament()
         delete this->stats[i];
 }
 
-void Tournament::play(int rounds, int threads, bool print_info)
+void Tournament::play(uint32_t rounds, uint8_t threads, bool print_info)
 {
-    for (int round = 0; round < rounds; ++round)
+    for (uint32_t round = 0; round < rounds; ++round)
     {
         if (print_info)
             printf("Round %d:\n", round + 1);
 
-        for (int i = 0; i < this->stats.size(); ++i)
-            for (int j = 0; j < this->stats.size(); ++j)
+        for (uint8_t i = 0; i < this->stats.size(); ++i)
+            for (uint8_t j = 0; j < this->stats.size(); ++j)
                 this->games.push_back(std::make_pair(i, j));
 
         this->play_games(game, threads, print_info);
@@ -51,16 +51,16 @@ void Tournament::play(int rounds, int threads, bool print_info)
 
 void Tournament::print_result()
 {
-    for (int i = 0; i < this->stats.size(); ++i)
+    for (uint8_t i = 0; i < this->stats.size(); ++i)
     {
         printf("%d: %7d   | ", this->stats[i]->id, this->stats[i]->score);
-        for (int j = 0; j < this->stats.size(); ++j)
+        for (uint8_t j = 0; j < this->stats.size(); ++j)
         {
-            int winsX = this->stats[i]->winsX[this->stats[j]->id];
-            int winsO = this->stats[i]->winsO[this->stats[j]->id];
-            int wins = winsX + winsO;
-            int loses = this->stats[i]->loses[this->stats[j]->id];
-            int games = this->stats[i]->games[this->stats[j]->id];
+            uint32_t winsX = this->stats[i]->winsX[this->stats[j]->id];
+            uint32_t winsO = this->stats[i]->winsO[this->stats[j]->id];
+            uint32_t wins = winsX + winsO;
+            uint32_t loses = this->stats[i]->loses[this->stats[j]->id];
+            uint32_t games = this->stats[i]->games[this->stats[j]->id];
             printf(" %d(%d/%d)-%d / %d |", wins, winsX, winsO, loses, games);
         }
         printf("\n");
@@ -69,7 +69,7 @@ void Tournament::print_result()
 
 void Tournament::test(Game *game, Player *player1, Player *player2)
 {
-    int result = play(game, player1, player2, true);
+    uint8_t result = play(game, player1, player2, true);
 
     delete game;
     delete player1;
@@ -83,21 +83,21 @@ void Tournament::test(Game *game, Player *player1, Player *player2)
         printf("Player1 win!!\n");
 }
 
-int Tournament::play(Game *game, Player *player1, Player *player2, bool print_info)
+uint8_t Tournament::play(Game *game, Player *player1, Player *player2, bool print_info)
 {
     std::vector<Player*> players = { player1, player2 };
-    int player = 0;
+    uint8_t player = 0;
 
     while (true)
     {
-        std::vector<int> moves = game->moves_get();
+        std::vector<uint32_t> moves = game->moves_get();
         if (moves.size() == 0)
             break;
 
         if (print_info)
             printf("Player%d:\n", player);
 
-        int move = players[player]->move(game, print_info);
+        uint32_t move = players[player]->move(game, print_info);
         game->move_do(move);
 
         if (print_info)
@@ -115,11 +115,11 @@ int Tournament::play(Game *game, Player *player1, Player *player2, bool print_in
     return 0;
 }
 
-void Tournament::play_games(Game *game, int threads, bool print_info)
+void Tournament::play_games(Game *game, uint8_t threads, bool print_info)
 {
     std::vector<std::thread*> threads_pool;
-    unsigned int current_time = time(nullptr);
-    for (int i = 1; i < threads; ++i)
+    uint32_t current_time = time(nullptr);
+    for (uint8_t i = 1; i < threads; ++i)
         threads_pool.push_back(new std::thread(&Tournament::thread_func, this, current_time + i, game, print_info));
 
     this->play_games(game, print_info);
@@ -135,23 +135,26 @@ void Tournament::play_games(Game *game, bool print_info)
 {
     while (true)
     {
-        auto players = this->get_game();
-        if (players.first < 0 || players.second < 0)
+        bool got = false;
+        auto players = this->get_game(got);
+        if (!got)
             break;
 
         this->play_game(game, players.first, players.second, print_info);
     }
 }
 
-std::pair<int, int> Tournament::get_game()
+std::pair<uint8_t, uint8_t> Tournament::get_game(bool &got)
 {
-    auto result = std::make_pair(-1, -1);
+    auto result = std::make_pair(0, 0);
+    got = false;
 
     this->mutex1.lock();
 
     if (this->games.size() > 0)
     {
         result = games.back();
+        got = true;
         games.pop_back();
     }
 
@@ -160,11 +163,11 @@ std::pair<int, int> Tournament::get_game()
     return result;
 }
 
-void Tournament::play_game(Game *game, int i, int j, bool print_info)
+void Tournament::play_game(Game *game, uint8_t i, uint8_t j, bool print_info)
 {
     Game *current_game = game->clone();
 
-    int result = play(current_game, this->stats[i]->player, this->stats[j]->player, false);
+    uint8_t result = play(current_game, this->stats[i]->player, this->stats[j]->player, false);
 
     this->mutex2.lock();
 
@@ -195,7 +198,7 @@ void Tournament::play_game(Game *game, int i, int j, bool print_info)
     delete current_game;
 }
 
-void Tournament::thread_func(unsigned int seed, Game *game, bool print_info)
+void Tournament::thread_func(uint32_t seed, Game *game, bool print_info)
 {
     srand(seed);
     this->play_games(game, print_info);

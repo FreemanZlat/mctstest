@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <cinttypes>
 
 class Utils
 {
@@ -10,7 +11,7 @@ class Utils
      public:
         Timer();
         void start();
-        int get();
+        uint32_t get();
      private:
         std::chrono::time_point<std::chrono::high_resolution_clock> start_point;
     };

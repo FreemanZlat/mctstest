@@ -8,7 +8,7 @@
 
 #include <cstdio>
 
-PlayerMCTS::PlayerMCTS(int move_duration_ms, int iterations_max) :
+PlayerMCTS::PlayerMCTS(uint32_t move_duration_ms, uint32_t iterations_max) :
         move_duration_ms(move_duration_ms),
         iterations_max(iterations_max)
 {
@@ -18,7 +18,7 @@ PlayerMCTS::~PlayerMCTS()
 {
 }
 
-PlayerMCTS::Node::Node(Node *parent, Game *game, int move) :
+PlayerMCTS::Node::Node(Node *parent, Game *game, uint32_t move) :
         parent(parent),
         moves(game->moves_get()),
         move(move),
@@ -26,6 +26,7 @@ PlayerMCTS::Node::Node(Node *parent, Game *game, int move) :
         endgame(false),
         score(0)
 {
+    this->children.reserve(moves.size());
     this->wins[0] = 0;
     this->wins[1] = 0;
 }
@@ -34,13 +35,13 @@ PlayerMCTS::Node::~Node()
 {
 }
 
-int PlayerMCTS::move(Game *game, bool print_info)
+uint32_t PlayerMCTS::move(Game *game, bool print_info)
 {
     Utils::Timer timer;
 
     Node *root = new Node(nullptr, game, -1);
 
-    for (int i = 0; i < this->iterations_max; ++i)
+    for (uint32_t i = 0; i < this->iterations_max; ++i)
     {
         Game *root_game = game->clone();
         root->endgame = false;
@@ -52,11 +53,11 @@ int PlayerMCTS::move(Game *game, bool print_info)
             break;
     }
 
-    int idx = game->get_player() ? 0 : 1;
-    int move = 0;
+    uint8_t idx = game->get_player() ? 0 : 1;
+    uint32_t move = 0;
     Node *move_node = nullptr;
-    int max_visits = -1;
-    int sum_visits = 0;
+    uint32_t max_visits = 0;
+    uint32_t sum_visits = 0;
     for (Node *node : root->children)
     {
         if (print_info)
@@ -80,11 +81,11 @@ int PlayerMCTS::move(Game *game, bool print_info)
     return move;
 }
 
-int PlayerMCTS::search(Node *node, Game *game, bool expand)
+int8_t PlayerMCTS::search(Node *node, Game *game, bool expand)
 {
     bool current_player = game->get_player();
-    int player_idx = current_player ? 0 : 1;
-    int result = 0;
+    uint8_t player_idx = current_player ? 0 : 1;
+    int8_t result = 0;
 
     if (node->endgame)
     {
@@ -98,7 +99,7 @@ int PlayerMCTS::search(Node *node, Game *game, bool expand)
     }
     else if (expand)
     {
-        std::vector<int> moves = game->moves_get();
+        std::vector<uint32_t> moves = game->moves_get();
         while (moves.size() > 0)
         {
             game->move_do(moves[rand() % moves.size()]);
@@ -117,8 +118,8 @@ int PlayerMCTS::search(Node *node, Game *game, bool expand)
 
         if (node->moves.size() > 0)
         {
-            int random_move = rand() % node->moves.size();
-            int move = node->moves[random_move];
+            uint32_t random_move = rand() % node->moves.size();
+            uint32_t move = node->moves[random_move];
 
             node->moves[random_move] = node->moves.back();
             node->moves.pop_back();

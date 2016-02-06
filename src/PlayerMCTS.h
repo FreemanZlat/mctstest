@@ -7,30 +7,30 @@
 class PlayerMCTS : public Player
 {
  public:
-    PlayerMCTS(int move_duration_ms, int iterations_max);
+    PlayerMCTS(uint32_t move_duration_ms, uint32_t iterations_max);
     virtual ~PlayerMCTS();
 
-    int move(Game *game, bool print_info);
+    uint32_t move(Game *game, bool print_info);
 
  private:
-    int move_duration_ms;
-    int iterations_max;
+    uint32_t move_duration_ms;
+    uint32_t iterations_max;
 
     struct Node
     {
         Node *parent;
         std::vector<Node*> children;
-        std::vector<int> moves;
-        int move;
-        int wins[2];
-        int visits;
+        std::vector<uint32_t> moves;
+        uint32_t move;
+        uint32_t wins[2];
+        uint32_t visits;
         bool endgame;
-        int score;
+        int8_t score;
 
-        Node(Node *parent, Game *game, int move);
+        Node(Node *parent, Game *game, uint32_t move);
         ~Node();
     };
 
-    static int search(Node *node, Game *game, bool expand);
+    static int8_t search(Node *node, Game *game, bool expand);
     static void kill_tree(Node *node);
 };

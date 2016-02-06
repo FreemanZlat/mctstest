@@ -8,15 +8,15 @@
 class PlayerAB : public Player
 {
  public:
-    PlayerAB(int move_duration_ms, int max_depth);
+    PlayerAB(uint32_t move_duration_ms, uint32_t max_depth);
     virtual ~PlayerAB();
 
-    int move(Game *game, bool print_info);
+    uint32_t move(Game *game, bool print_info);
 
  private:
-    int move_duration_ms;
-    int max_depth;
+    uint32_t move_duration_ms;
+    uint32_t max_depth;
 
-    static int search(int depth, int ply, int alpha, int beta, Game *game, int &nodes, bool &aborted,
-                      Utils::Timer &timer, const int move_duration_ms);
+    static int32_t search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t beta, Game *game, uint32_t &nodes,
+                          bool &aborted, Utils::Timer &timer, const uint32_t move_duration_ms);
 };

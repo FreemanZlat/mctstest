@@ -15,7 +15,7 @@ int main()
     Tournament tournament(new GameXO_4x4x4(), { new PlayerMCTS(500, 10000000), new PlayerMCTS(1000, 10000000),
                                   new PlayerMinimax(500, 64), new PlayerMinimax(1000, 64), new PlayerAB(500, 64),
                                   new PlayerAB(1000, 64) });
-    tournament.play(10, 4, true);
+    tournament.play(1000, 2, true);
 
 //    Tournament::test(new GameXO_4x4x4(), new PlayerMCTS(1000, 10000000), new PlayerAB(1000, 64));
 

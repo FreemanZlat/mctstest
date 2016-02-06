@@ -11,19 +11,19 @@ class Tournament
  public:
     Tournament(Game *game, std::vector<Player*> players);
     ~Tournament();
-    void play(int rounds = 10, int threads = 1, bool print_info = true);
+    void play(uint32_t rounds = 10, uint8_t threads = 1, bool print_info = true);
     void print_result();
     static void test(Game *game, Player *player1, Player *player2);
-    static int play(Game *game, Player *player1, Player *player2, bool print_info);
+    static uint8_t play(Game *game, Player *player1, Player *player2, bool print_info);
 
  private:
     struct PlayerInfo
     {
-        int id;
-        int score;
+        uint8_t id;
+        uint32_t score;
         Player *player;
-        std::vector<int> winsX, winsO, loses, games;
-        PlayerInfo(int id, Player *player, int size) :
+        std::vector<uint32_t> winsX, winsO, loses, games;
+        PlayerInfo(uint8_t id, Player *player, uint32_t size) :
                 id(id),
                 score(0),
                 player(player)
@@ -41,12 +41,12 @@ class Tournament
 
     Game *game;
     std::vector<PlayerInfo*> stats;
-    std::vector<std::pair<int, int>> games;
+    std::vector<std::pair<uint8_t, uint8_t>> games;
     std::mutex mutex1, mutex2;
 
-    void play_games(Game *game, int threads, bool print_info);
+    void play_games(Game *game, uint8_t threads, bool print_info);
     void play_games(Game *game, bool print_info);
-    std::pair<int, int> get_game();
-    void play_game(Game *game, int i, int j, bool print_info);
-    void thread_func(unsigned int seed, Game *game, bool print_info);
+    std::pair<uint8_t, uint8_t> get_game(bool &got);
+    void play_game(Game *game, uint8_t i, uint8_t j, bool print_info);
+    void thread_func(uint32_t seed, Game *game, bool print_info);
 };

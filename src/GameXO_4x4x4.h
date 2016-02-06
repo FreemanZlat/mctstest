@@ -9,21 +9,21 @@ class GameXO_4x4x4 : public Game
     virtual ~GameXO_4x4x4();
 
     Game* clone();
-    std::vector<int> moves_get(bool sorted);
-    void move_do(const int move);
-    void move_undo(const int move);
+    std::vector<uint32_t> moves_get(bool sorted);
+    void move_do(const uint32_t move);
+    void move_undo(const uint32_t move);
     bool is_win();
     bool get_player();
-    int eval();
+    int32_t eval();
     void print();
 
  private:
     bool is_first_player_move;
-    std::vector<unsigned char> board;
-    std::vector<unsigned char> history;
-    static std::vector<std::vector<unsigned char>> check_lines;
-    static std::vector<std::vector<int>> win_check;
-    static std::vector<int> eval_pst;
+    std::vector<uint8_t> board;
+    std::vector<uint8_t> history;
+    static std::vector<std::vector<uint8_t>> check_lines;
+    static std::vector<std::vector<uint8_t>> win_check;
+    static std::vector<int8_t> eval_pst;
     static struct _init
     {
         _init();
