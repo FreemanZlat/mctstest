@@ -70,6 +70,11 @@ bool GameXO::is_win()
     return false;
 }
 
+bool GameXO::is_single_move()
+{
+    return false;
+}
+
 bool GameXO::get_player()
 {
     return this->is_first_player_move;

@@ -13,6 +13,7 @@ class GameXO : public Game
     void move_do(const uint32_t move);
     void move_undo(const uint32_t move);
     bool is_win();
+    bool is_single_move();
     bool get_player();
     int32_t eval();
     void print();

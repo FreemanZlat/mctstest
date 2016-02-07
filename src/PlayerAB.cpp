@@ -7,8 +7,9 @@
 #include <cstdio>
 #include <cstdlib>
 
-PlayerAB::PlayerAB(uint32_t move_duration_ms, uint32_t max_depth) :
+PlayerAB::PlayerAB(uint32_t move_duration_ms, bool single_extension, uint32_t max_depth) :
         move_duration_ms(move_duration_ms),
+        single_extension(single_extension),
         max_depth(max_depth)
 {
 }
@@ -43,7 +44,8 @@ uint32_t PlayerAB::move(Game *game, bool print_info)
         for (auto &move : moves_scores)
         {
             game->move_do(move.first);
-            move.second = -search(d, 0, -100000, -max, game, nodes, aborted, timer, this->move_duration_ms);
+            move.second = -search(d, 0, -100000, -max, game, nodes, aborted, timer, this->move_duration_ms,
+                                  this->single_extension);
             game->move_undo(move.first);
 
             if (aborted)
@@ -71,7 +73,7 @@ uint32_t PlayerAB::move(Game *game, bool print_info)
 }
 
 int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t beta, Game *game, uint32_t &nodes,
-                         bool &aborted, Utils::Timer &timer, const uint32_t move_duration_ms)
+                         bool &aborted, Utils::Timer &timer, const uint32_t move_duration_ms, bool single_extension)
 {
     if ((++nodes % 100000) == 0 && timer.get() >= move_duration_ms)
     {
@@ -81,6 +83,10 @@ int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t be
 
     if (game->is_win())
         return -(10000 - ply);
+
+    if (single_extension && game->is_single_move())
+        depth++;
+
     if (depth == 0)
         return game->eval();
 
@@ -92,7 +98,8 @@ int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t be
     for (uint32_t move : moves)
     {
         game->move_do(move);
-        int32_t value = -search(depth - 1, ply + 1, -beta, -alpha, game, nodes, aborted, timer, move_duration_ms);
+        int32_t value = -search(depth - 1, ply + 1, -beta, -alpha, game, nodes, aborted, timer, move_duration_ms,
+                                single_extension);
         game->move_undo(move);
 
         if (aborted)

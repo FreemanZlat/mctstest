@@ -12,6 +12,7 @@ class Game
     virtual void move_do(const uint32_t move) = 0;
     virtual void move_undo(const uint32_t move) = 0;
     virtual bool is_win() = 0;
+    virtual bool is_single_move() = 0;
     virtual bool get_player() = 0;
     virtual int32_t eval() = 0;
     virtual void print() = 0;

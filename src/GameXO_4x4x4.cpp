@@ -157,6 +157,24 @@ bool GameXO_4x4x4::is_win()
     return false;
 }
 
+bool GameXO_4x4x4::is_single_move()
+{
+    if (this->history.size() == 0)
+        return false;
+
+    uint8_t player = this->is_first_player_move ? 0 : 1;
+    uint32_t move = this->history.back();
+
+    for (uint8_t idx : win_check[move])
+    {
+        bool single = ((this->_board[player] & check_lines[idx]) | (uint64_t) 1 << move) == check_lines[idx];
+        if (single)
+            return true;
+    }
+
+    return false;
+}
+
 bool GameXO_4x4x4::get_player()
 {
     return this->is_first_player_move;
