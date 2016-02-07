@@ -8,7 +8,7 @@
 class PlayerMinimax : public Player
 {
  public:
-    PlayerMinimax(uint32_t move_duration_ms, uint32_t max_depth);
+    PlayerMinimax(uint32_t move_duration_ms, uint32_t max_depth = 64);
     virtual ~PlayerMinimax();
 
     uint32_t move(Game *game, bool print_info);

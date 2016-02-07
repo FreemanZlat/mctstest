@@ -8,7 +8,7 @@
 class PlayerAB : public Player
 {
  public:
-    PlayerAB(uint32_t move_duration_ms, uint32_t max_depth);
+    PlayerAB(uint32_t move_duration_ms, uint32_t max_depth = 64);
     virtual ~PlayerAB();
 
     uint32_t move(Game *game, bool print_info);

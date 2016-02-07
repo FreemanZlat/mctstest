@@ -7,7 +7,7 @@
 class PlayerMCTS : public Player
 {
  public:
-    PlayerMCTS(uint32_t move_duration_ms, uint32_t iterations_max);
+    PlayerMCTS(uint32_t move_duration_ms, uint32_t iterations_max = 100000000);
     virtual ~PlayerMCTS();
 
     uint32_t move(Game *game, bool print_info);

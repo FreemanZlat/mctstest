@@ -2,7 +2,7 @@
 
 #include <cstdio>
 
-std::vector<std::vector<uint8_t>> GameXO_4x4x4::check_lines;
+std::vector<uint64_t> GameXO_4x4x4::check_lines;
 std::vector<std::vector<uint8_t>> GameXO_4x4x4::win_check;
 std::vector<int8_t> GameXO_4x4x4::eval_pst = { 12, 11, 11, 12, 11, 10, 10, 11, 11, 10, 10, 11, 12, 11, 11, 12, 11, 10,
         10, 11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10, 10, 11, 11, 10, 10, 11, 10, 12, 12, 10, 10, 12, 12, 10, 11, 10,
@@ -16,12 +16,12 @@ GameXO_4x4x4::_init::_init()
     for (uint8_t x = 0; x < 4; ++x)
         for (uint8_t y = 0; y < 4; ++y)
         {
-            std::vector<uint8_t> line1, line2, line3;
+            uint64_t line1 = 0, line2 = 0, line3 = 0;
             for (uint8_t z = 0; z < 4; ++z)
             {
-                line1.push_back(x * 16 + y * 4 + z);
-                line2.push_back(x * 16 + z * 4 + y);
-                line3.push_back(z * 16 + x * 4 + y);
+                line1 |= (uint64_t) 1 << (x * 16 + y * 4 + z);
+                line2 |= (uint64_t) 1 << (x * 16 + z * 4 + y);
+                line3 |= (uint64_t) 1 << (z * 16 + x * 4 + y);
                 win_check[x * 16 + y * 4 + z].push_back(check_lines.size());
                 win_check[x * 16 + z * 4 + y].push_back(check_lines.size() + 1);
                 win_check[z * 16 + x * 4 + y].push_back(check_lines.size() + 2);
@@ -33,15 +33,15 @@ GameXO_4x4x4::_init::_init()
 
     for (uint8_t x = 0; x < 4; ++x)
     {
-        std::vector<uint8_t> diag1a, diag1b, diag2a, diag2b, diag3a, diag3b;
+        uint64_t diag1a = 0, diag1b = 0, diag2a = 0, diag2b = 0, diag3a = 0, diag3b = 0;
         for (uint8_t y = 0; y < 4; ++y)
         {
-            diag1a.push_back(x * 16 + y * 4 + y);
-            diag1b.push_back(x * 16 + y * 4 + (3 - y));
-            diag2a.push_back(y * 16 + x * 4 + y);
-            diag2b.push_back(y * 16 + x * 4 + (3 - y));
-            diag3a.push_back(y * 16 + y * 4 + x);
-            diag3b.push_back(y * 16 + (3 - y) * 4 + x);
+            diag1a |= (uint64_t) 1 << (x * 16 + y * 4 + y);
+            diag1b |= (uint64_t) 1 << (x * 16 + y * 4 + (3 - y));
+            diag2a |= (uint64_t) 1 << (y * 16 + x * 4 + y);
+            diag2b |= (uint64_t) 1 << (y * 16 + x * 4 + (3 - y));
+            diag3a |= (uint64_t) 1 << (y * 16 + y * 4 + x);
+            diag3b |= (uint64_t) 1 << (y * 16 + (3 - y) * 4 + x);
             win_check[x * 16 + y * 4 + y].push_back(check_lines.size());
             win_check[x * 16 + y * 4 + (3 - y)].push_back(check_lines.size() + 1);
             win_check[y * 16 + x * 4 + y].push_back(check_lines.size() + 2);
@@ -57,13 +57,13 @@ GameXO_4x4x4::_init::_init()
         check_lines.push_back(diag3b);
     }
 
-    std::vector<uint8_t> diag1, diag2, diag3, diag4;
+    uint64_t diag1 = 0, diag2 = 0, diag3 = 0, diag4 = 0;
     for (uint8_t x = 0; x < 4; ++x)
     {
-        diag1.push_back(x * 16 + x * 4 + x);
-        diag2.push_back(x * 16 + x * 4 + (3 - x));
-        diag3.push_back(x * 16 + (3 - x) * 4 + x);
-        diag4.push_back(x * 16 + (3 - x) * 4 + (3 - x));
+        diag1 |= (uint64_t) 1 << (x * 16 + x * 4 + x);
+        diag2 |= (uint64_t) 1 << (x * 16 + x * 4 + (3 - x));
+        diag3 |= (uint64_t) 1 << (x * 16 + (3 - x) * 4 + x);
+        diag4 |= (uint64_t) 1 << (x * 16 + (3 - x) * 4 + (3 - x));
         win_check[x * 16 + x * 4 + x].push_back(check_lines.size());
         win_check[x * 16 + x * 4 + (3 - x)].push_back(check_lines.size() + 1);
         win_check[x * 16 + (3 - x) * 4 + x].push_back(check_lines.size() + 2);
@@ -149,13 +149,7 @@ bool GameXO_4x4x4::is_win()
 
     for (uint8_t idx : win_check[move])
     {
-        bool win = true;
-        for (auto pos : check_lines[idx])
-            if ((this->_board[player] & (uint64_t) 1 << pos) == 0)
-            {
-                win = false;
-                break;
-            }
+        bool win = (this->_board[player] & check_lines[idx]) == check_lines[idx];
         if (win)
             return true;
     }
