@@ -3,9 +3,7 @@
 #include "Game.h"
 #include "Utils.h"
 
-#include <cstdlib>
 #include <cmath>
-
 #include <cstdio>
 
 PlayerMCTS::PlayerMCTS(uint32_t move_duration_ms, uint32_t iterations_max) :
@@ -35,9 +33,9 @@ PlayerMCTS::Node::~Node()
 {
 }
 
-uint32_t PlayerMCTS::move(Game *game, bool print_info)
+uint32_t PlayerMCTS::move(Game *game, Random *rnd, bool print_info)
 {
-    Utils::Timer timer;
+    Timer timer;
 
     Node *root = new Node(nullptr, game, -1);
 
@@ -46,7 +44,7 @@ uint32_t PlayerMCTS::move(Game *game, bool print_info)
         Game *root_game = game->clone();
         root->endgame = false;
         root->score = 0;
-        search(root, root_game, false);
+        search(root, root_game, rnd, false);
         delete root_game;
 
         if (timer.get() >= this->move_duration_ms)
@@ -81,7 +79,7 @@ uint32_t PlayerMCTS::move(Game *game, bool print_info)
     return move;
 }
 
-int8_t PlayerMCTS::search(Node *node, Game *game, bool expand)
+int8_t PlayerMCTS::search(Node *node, Game *game, Random *rnd, bool expand)
 {
     bool current_player = game->get_player();
     uint8_t player_idx = current_player ? 0 : 1;
@@ -102,7 +100,7 @@ int8_t PlayerMCTS::search(Node *node, Game *game, bool expand)
         std::vector<uint32_t> moves = game->moves_get();
         while (moves.size() > 0)
         {
-            game->move_do(moves[rand() % moves.size()]);
+            game->move_do(moves[rnd->get() % moves.size()]);
             if (game->is_win())
             {
                 result = current_player != game->get_player() ? 1 : -1;
@@ -118,7 +116,7 @@ int8_t PlayerMCTS::search(Node *node, Game *game, bool expand)
 
         if (node->moves.size() > 0)
         {
-            uint32_t random_move = rand() % node->moves.size();
+            uint32_t random_move = rnd->get() % node->moves.size();
             uint32_t move = node->moves[random_move];
 
             node->moves[random_move] = node->moves.back();
@@ -170,7 +168,7 @@ int8_t PlayerMCTS::search(Node *node, Game *game, bool expand)
             game->move_do(next->move);
         }
 
-        result = -search(next, game, next_expand);
+        result = -search(next, game, rnd, next_expand);
     }
     else
     {

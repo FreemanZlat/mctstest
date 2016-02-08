@@ -4,13 +4,15 @@
 
 #include <vector>
 
+class Random;
+
 class PlayerMCTS : public Player
 {
  public:
     PlayerMCTS(uint32_t move_duration_ms, uint32_t iterations_max = 100000000);
     virtual ~PlayerMCTS();
 
-    uint32_t move(Game *game, bool print_info);
+    uint32_t move(Game *game, Random *rnd, bool print_info);
 
  private:
     uint32_t move_duration_ms;
@@ -31,6 +33,6 @@ class PlayerMCTS : public Player
         ~Node();
     };
 
-    static int8_t search(Node *node, Game *game, bool expand);
+    static int8_t search(Node *node, Game *game, Random *rnd, bool expand);
     static void kill_tree(Node *node);
 };

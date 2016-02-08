@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cinttypes"
+#include <cinttypes>
 #include <vector>
 
 class Game

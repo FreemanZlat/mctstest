@@ -1,17 +1,28 @@
 #include "Utils.h"
 
-Utils::Timer::Timer()
+Timer::Timer()
 {
     this->start();
 }
 
-void Utils::Timer::start()
+void Timer::start()
 {
     this->start_point = std::chrono::high_resolution_clock::now();
 }
 
-uint32_t Utils::Timer::get()
+uint32_t Timer::get()
 {
     auto current = std::chrono::high_resolution_clock::now();
     return std::chrono::duration_cast<std::chrono::milliseconds>(current - this->start_point).count();
+}
+
+Random::Random()
+{
+    std::random_device rd;
+    this->mt.seed(rd());
+}
+
+uint32_t Random::get()
+{
+    return uint_dist(mt);
 }

@@ -1,8 +1,11 @@
 #include "Tournament.h"
 
+#include "Game.h"
+#include "Player.h"
+#include "Utils.h"
+
 #include <algorithm>
 #include <cstdio>
-#include <cstdlib>
 #include <thread>
 
 Tournament::Tournament(Game *game, std::vector<Player*> players) :
@@ -21,6 +24,9 @@ Tournament::~Tournament()
 
 void Tournament::play(uint32_t rounds, uint8_t threads, bool print_info)
 {
+    for (uint8_t i = 0; i < threads; ++i)
+        this->rands.push_back(new Random());
+
     for (uint32_t round = 0; round < rounds; ++round)
     {
         if (print_info)
@@ -30,7 +36,7 @@ void Tournament::play(uint32_t rounds, uint8_t threads, bool print_info)
             for (uint8_t j = 0; j < this->stats.size(); ++j)
                 this->games.push_back(std::make_pair(i, j));
 
-        this->play_games(game, threads, print_info);
+        this->play_games(threads, print_info);
 
         std::sort(this->stats.begin(), this->stats.end(), [](PlayerInfo *a, PlayerInfo *b)
         {
@@ -43,6 +49,9 @@ void Tournament::play(uint32_t rounds, uint8_t threads, bool print_info)
             printf("\n");
         }
     }
+
+    for (uint8_t i = 0; i < threads; ++i)
+        delete this->rands[i];
 
     if (print_info)
         printf("done!\n");
@@ -68,7 +77,8 @@ void Tournament::print_result()
 
 void Tournament::test(Game *game, Player *player1, Player *player2)
 {
-    uint8_t result = play(game, player1, player2, true);
+    Random rnd;
+    uint8_t result = play(&rnd, game, player1, player2, true);
 
     delete game;
     delete player1;
@@ -82,45 +92,27 @@ void Tournament::test(Game *game, Player *player1, Player *player2)
         printf("Player1 win!!\n");
 }
 
-uint8_t Tournament::play(Game *game, Player *player1, Player *player2, bool print_info)
+Tournament::PlayerInfo::PlayerInfo(uint8_t id, Player *player, uint32_t size) :
+        id(id),
+        score(0),
+        player(player)
 {
-    std::vector<Player*> players = { player1, player2 };
-    uint8_t player = 0;
-
-    while (true)
-    {
-        std::vector<uint32_t> moves = game->moves_get();
-        if (moves.size() == 0)
-            break;
-
-        if (print_info)
-            printf("Player%d:\n", player);
-
-        uint32_t move = players[player]->move(game, print_info);
-        game->move_do(move);
-
-        if (print_info)
-        {
-            game->print();
-            printf("\n");
-        }
-
-        if (game->is_win())
-            return 1 + player;
-
-        player = 1 - player;
-    }
-
-    return 0;
+    winsX.resize(size, 0);
+    winsO.resize(size, 0);
+    loses.resize(size, 0);
+    games.resize(size, 0);
 }
 
-void Tournament::play_games(Game *game, uint8_t threads, bool print_info)
+Tournament::PlayerInfo::~PlayerInfo()
+{
+    delete player;
+}
+
+void Tournament::play_games(uint8_t threads, bool print_info)
 {
     std::vector<std::thread*> threads_pool;
-    for (uint8_t i = 1; i < threads; ++i)
-        threads_pool.push_back(new std::thread(&Tournament::thread_func, this, rand() + i, game, print_info));
-
-    this->play_games(game, print_info);
+    for (uint8_t i = 0; i < threads; ++i)
+        threads_pool.push_back(new std::thread(&Tournament::thread_func, this, i, print_info));
 
     for (auto thread : threads_pool)
     {
@@ -129,7 +121,7 @@ void Tournament::play_games(Game *game, uint8_t threads, bool print_info)
     }
 }
 
-void Tournament::play_games(Game *game, bool print_info)
+void Tournament::play_games(Random *rnd, bool print_info)
 {
     while (true)
     {
@@ -138,7 +130,7 @@ void Tournament::play_games(Game *game, bool print_info)
         if (!got)
             break;
 
-        this->play_game(game, players.first, players.second, print_info);
+        this->play_game(rnd, players.first, players.second, print_info);
     }
 }
 
@@ -161,11 +153,11 @@ std::pair<uint8_t, uint8_t> Tournament::get_game(bool &got)
     return result;
 }
 
-void Tournament::play_game(Game *game, uint8_t i, uint8_t j, bool print_info)
+void Tournament::play_game(Random *rnd, uint8_t i, uint8_t j, bool print_info)
 {
-    Game *current_game = game->clone();
+    Game *current_game = this->game->clone();
 
-    uint8_t result = play(current_game, this->stats[i]->player, this->stats[j]->player, false);
+    uint8_t result = play(rnd, current_game, this->stats[i]->player, this->stats[j]->player, false);
 
     this->mutex2.lock();
 
@@ -196,8 +188,39 @@ void Tournament::play_game(Game *game, uint8_t i, uint8_t j, bool print_info)
     delete current_game;
 }
 
-void Tournament::thread_func(uint32_t seed, Game *game, bool print_info)
+void Tournament::thread_func(uint8_t thread_id, bool print_info)
 {
-    srand(seed);
-    this->play_games(game, print_info);
+    this->play_games(this->rands[thread_id], print_info);
+}
+
+uint8_t Tournament::play(Random *rnd, Game *game, Player *player1, Player *player2, bool print_info)
+{
+    std::vector<Player*> players = { player1, player2 };
+    uint8_t player = 0;
+
+    while (true)
+    {
+        std::vector<uint32_t> moves = game->moves_get();
+        if (moves.size() == 0)
+            break;
+
+        if (print_info)
+            printf("Player%d:\n", player);
+
+        uint32_t move = players[player]->move(game, rnd, print_info);
+        game->move_do(move);
+
+        if (print_info)
+        {
+            game->print();
+            printf("\n");
+        }
+
+        if (game->is_win())
+            return 1 + player;
+
+        player = 1 - player;
+    }
+
+    return 0;
 }
