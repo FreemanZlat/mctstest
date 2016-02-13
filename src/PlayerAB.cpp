@@ -6,20 +6,25 @@
 #include <algorithm>
 #include <cstdio>
 
-PlayerAB::PlayerAB(uint32_t move_duration_ms, bool single_extension, uint32_t max_depth) :
-        move_duration_ms(move_duration_ms),
-        single_extension(single_extension),
-        max_depth(max_depth)
+PlayerAB::PlayerAB(uint32_t move_duration_ms, uint8_t eval_type, bool single_extension, uint32_t max_depth)
 {
+    this->params.move_duration_ms = move_duration_ms;
+    this->params.eval_type = eval_type;
+    this->params.single_extension = single_extension;
+    this->params.max_depth = max_depth;
+    this->params.aborted = false;
+    this->params.nodes = 0;
+    this->params.timer = new Timer();
 }
 
 PlayerAB::~PlayerAB()
 {
+    delete this->params.timer;
 }
 
 uint32_t PlayerAB::move(Game *game, Random *rnd, bool print_info)
 {
-    Timer timer;
+    this->params.timer->start();
 
     uint32_t result = 0;
     int32_t result_score = 0;
@@ -29,9 +34,9 @@ uint32_t PlayerAB::move(Game *game, Random *rnd, bool print_info)
     for (uint32_t move : moves)
         moves_scores.push_back(std::make_pair(move, rnd->get() % 1000));
 
-    uint32_t nodes = 1;
-    bool aborted = false;
-    for (uint32_t d = 0; d < this->max_depth; ++d)
+    this->params.nodes = 1;
+    this->params.aborted = false;
+    for (uint32_t d = 0; d < this->params.max_depth; ++d)
     {
         std::sort(moves_scores.begin(), moves_scores.end(),
                   [](std::pair<uint32_t, int32_t> a, std::pair<uint32_t, int32_t> b)
@@ -43,14 +48,13 @@ uint32_t PlayerAB::move(Game *game, Random *rnd, bool print_info)
         for (auto &move : moves_scores)
         {
             game->move_do(move.first);
-            move.second = -search(d, 0, -100000, -max, game, nodes, aborted, timer, this->move_duration_ms,
-                                  this->single_extension);
+            move.second = -search(d, 0, -100000, -max, game, this->params);
             game->move_undo(move.first);
 
-            if (aborted)
+            if (this->params.aborted)
                 break;
 
-            if (print_info && nodes > 500000)
+            if (print_info && this->params.nodes > 200000)
                 printf("Depth:%d move:%d : %d\n", d + 1, move.first, move.second);
 
             if (move.second > max)
@@ -61,33 +65,32 @@ uint32_t PlayerAB::move(Game *game, Random *rnd, bool print_info)
             }
         }
 
-        if (aborted)
+        if (this->params.aborted)
             break;
     }
 
     if (print_info)
-        printf("Move=%d (%d)  nodes=%d\n", result, result_score, nodes);
+        printf("Move=%d (%d)  nodes=%d\n", result, result_score, this->params.nodes);
 
     return result;
 }
 
-int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t beta, Game *game, uint32_t &nodes,
-                         bool &aborted, Timer &timer, const uint32_t move_duration_ms, bool single_extension)
+int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t beta, Game *game, Params &params)
 {
-    if ((++nodes % 100000) == 0 && timer.get() >= move_duration_ms)
+    if ((++params.nodes % 50000) == 0 && params.timer->get() >= params.move_duration_ms)
     {
-        aborted = true;
+        params.aborted = true;
         return 0;
     }
 
     if (game->is_win())
         return -(10000 - ply);
 
-    if (single_extension && game->is_single_move())
+    if (params.single_extension && game->is_single_move())
         depth++;
 
     if (depth == 0)
-        return game->eval();
+        return game->eval(params.eval_type);
 
     std::vector<uint32_t> moves = game->moves_get(false);
     if (moves.size() == 0)
@@ -97,11 +100,10 @@ int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t be
     for (uint32_t move : moves)
     {
         game->move_do(move);
-        int32_t value = -search(depth - 1, ply + 1, -beta, -alpha, game, nodes, aborted, timer, move_duration_ms,
-                                single_extension);
+        int32_t value = -search(depth - 1, ply + 1, -beta, -alpha, game, params);
         game->move_undo(move);
 
-        if (aborted)
+        if (params.aborted)
             return 0;
 
         if (value > max)

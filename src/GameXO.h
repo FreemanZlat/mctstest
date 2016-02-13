@@ -15,7 +15,7 @@ class GameXO : public Game
     bool is_win();
     bool is_single_move();
     bool get_player();
-    int32_t eval();
+    int32_t eval(uint8_t type);
     void print();
 
  private:

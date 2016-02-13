@@ -14,6 +14,6 @@ class Game
     virtual bool is_win() = 0;
     virtual bool is_single_move() = 0;
     virtual bool get_player() = 0;
-    virtual int32_t eval() = 0;
+    virtual int32_t eval(uint8_t type = 0) = 0;
     virtual void print() = 0;
 };

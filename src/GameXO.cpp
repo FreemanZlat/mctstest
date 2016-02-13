@@ -80,7 +80,7 @@ bool GameXO::get_player()
     return this->is_first_player_move;
 }
 
-int32_t GameXO::eval()
+int32_t GameXO::eval(uint8_t type)
 {
     int32_t resX = 0, resO = 0;
     for (uint8_t i = 0; i < 9; ++i)

@@ -24,5 +24,5 @@ Random::Random()
 
 uint32_t Random::get()
 {
-    return uint_dist(mt);
+    return this->uint_dist(mt);
 }

@@ -15,12 +15,12 @@ class GameXO_4x4x4 : public Game
     bool is_win();
     bool is_single_move();
     bool get_player();
-    int32_t eval();
+    int32_t eval(uint8_t type);
     void print();
 
  private:
     bool is_first_player_move;
-    uint64_t _board[2];
+    uint64_t board[2];
     std::vector<uint8_t> history;
     static std::vector<uint64_t> check_lines;
     static std::vector<std::vector<uint8_t>> win_check;
@@ -29,4 +29,6 @@ class GameXO_4x4x4 : public Game
     {
         _init();
     } _initializer;
+
+    static uint8_t bits_count(uint64_t mask);
 };
