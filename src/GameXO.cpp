@@ -1,5 +1,7 @@
 #include "GameXO.h"
 
+#include "Utils.h"
+
 #include <algorithm>
 #include <cstdio>
 
@@ -58,6 +60,16 @@ void GameXO::move_undo(const uint32_t move)
 
     this->board[move] = 0;
     this->is_first_player_move = !is_first_player_move;
+}
+
+bool GameXO::move_random(Random *rnd)
+{
+    std::vector<uint32_t> moves = this->moves_get(false);
+    if (moves.empty())
+        return false;
+
+    this->move_do(moves[rnd->get() % moves.size()]);
+    return true;
 }
 
 bool GameXO::is_win()

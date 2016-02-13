@@ -4,7 +4,6 @@
 
 #include <vector>
 
-class Random;
 class Timer;
 
 class PlayerAB : public Player

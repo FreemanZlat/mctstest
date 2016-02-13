@@ -12,6 +12,7 @@ class GameXO : public Game
     std::vector<uint32_t> moves_get(bool sorted);
     void move_do(const uint32_t move);
     void move_undo(const uint32_t move);
+    bool move_random(Random *rnd);
     bool is_win();
     bool is_single_move();
     bool get_player();

@@ -1,5 +1,7 @@
 #include "GameXO_4x4x4.h"
 
+#include "Utils.h"
+
 #include <cstdio>
 
 std::vector<uint64_t> GameXO_4x4x4::check_lines;
@@ -137,6 +139,38 @@ void GameXO_4x4x4::move_undo(const uint32_t move)
     this->board[this->is_first_player_move ? 1 : 0] &= ~move_mask;
     this->history.pop_back();
     this->is_first_player_move = !this->is_first_player_move;
+}
+
+bool GameXO_4x4x4::move_random(Random *rnd)
+{
+    uint64_t board_mask = ~(this->board[0] | this->board[1]);
+    if (board_mask == 0)
+        return false;
+
+    uint8_t move_num = rnd->get() % (64 - this->history.size());
+    uint64_t move_mask = ~(board_mask - 1) & board_mask;
+    for (uint8_t i = 0; i < move_num; ++i)
+    {
+        board_mask &= ~move_mask;
+        move_mask = ~(board_mask - 1) & board_mask;
+    }
+
+    uint32_t move = 0, num = 32;
+    uint64_t mask = 0xFFFFFFFF;
+    while (num != 0)
+    {
+        if ((move_mask & mask) == 0)
+        {
+            move += num;
+            move_mask >>= num;
+        }
+
+        num >>= 1;
+        mask >>= num;
+    }
+
+    this->move_do(move);
+    return true;
 }
 
 bool GameXO_4x4x4::is_win()

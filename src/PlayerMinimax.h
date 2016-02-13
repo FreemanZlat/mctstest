@@ -1,11 +1,9 @@
 #pragma once
 
 #include "Player.h"
-#include "Utils.h"
 
 #include <vector>
 
-class Random;
 class Timer;
 
 class PlayerMinimax : public Player

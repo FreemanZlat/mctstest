@@ -4,8 +4,6 @@
 
 #include <vector>
 
-class Random;
-
 class PlayerMCTS : public Player
 {
  public:

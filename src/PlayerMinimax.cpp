@@ -1,6 +1,7 @@
 #include "PlayerMinimax.h"
 
 #include "Game.h"
+#include "Utils.h"
 
 #include <algorithm>
 #include <cstdio>

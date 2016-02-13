@@ -97,16 +97,13 @@ int8_t PlayerMCTS::search(Node *node, Game *game, Random *rnd, bool expand)
     }
     else if (expand)
     {
-        std::vector<uint32_t> moves = game->moves_get();
-        while (moves.size() > 0)
+        while (game->move_random(rnd))
         {
-            game->move_do(moves[rnd->get() % moves.size()]);
             if (game->is_win())
             {
                 result = current_player != game->get_player() ? 1 : -1;
                 break;
             }
-            moves = game->moves_get();
         }
     }
     else if (node->moves.size() > 0 || node->children.size() > 0)
