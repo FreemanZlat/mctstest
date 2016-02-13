@@ -13,7 +13,7 @@ void Timer::start()
 uint32_t Timer::get()
 {
     auto current = std::chrono::high_resolution_clock::now();
-    return std::chrono::duration_cast<std::chrono::milliseconds>(current - this->start_point).count();
+    return (uint32_t) std::chrono::duration_cast<std::chrono::milliseconds>(current - this->start_point).count();
 }
 
 Random::Random()

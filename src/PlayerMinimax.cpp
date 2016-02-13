@@ -80,7 +80,7 @@ int32_t PlayerMinimax::search(uint32_t depth, uint32_t ply, Game *game, Params &
     }
 
     if (game->is_win())
-        return -(10000 - ply);
+        return -(10000 - (signed) ply);
     if (depth == 0)
         return game->eval();
 

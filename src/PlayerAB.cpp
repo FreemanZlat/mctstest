@@ -84,7 +84,7 @@ int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t be
     }
 
     if (game->is_win())
-        return -(10000 - ply);
+        return -(10000 - (signed) ply);
 
     if (params.single_extension && game->is_single_move())
         depth++;
