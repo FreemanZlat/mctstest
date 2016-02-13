@@ -27,10 +27,19 @@ class PlayerMCTS : public Player
         bool endgame;
         int8_t score;
 
-        Node(Node *parent, Game *game, uint32_t move);
-        ~Node();
+        void set(Node *parent, Game *game, uint32_t move);
     };
 
-    static int8_t search(Node *node, Game *game, Random *rnd, bool expand);
+    class NodesPool
+    {
+     public:
+        NodesPool();
+        Node* get();
+     private:
+        std::vector<std::vector<Node>> pool;
+        uint32_t idx;
+    };
+
+    static int8_t search(Node *node, Game *game, Random *rnd, bool expand, NodesPool &nodes);
     static void kill_tree(Node *node);
 };

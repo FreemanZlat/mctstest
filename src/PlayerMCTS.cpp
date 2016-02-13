@@ -16,35 +16,48 @@ PlayerMCTS::~PlayerMCTS()
 {
 }
 
-PlayerMCTS::Node::Node(Node *parent, Game *game, uint32_t move) :
-        parent(parent),
-        moves(game->moves_get()),
-        move(move),
-        visits(0),
-        endgame(false),
-        score(0)
+void PlayerMCTS::Node::set(Node *parent, Game *game, uint32_t move)
 {
+    this->parent = parent;
     this->children.reserve(moves.size());
+    this->moves = game->moves_get();
+    this->move = move;
     this->wins[0] = 0;
     this->wins[1] = 0;
+    this->visits = 0;
+    this->endgame = false;
+    this->score = 0;
 }
 
-PlayerMCTS::Node::~Node()
+PlayerMCTS::NodesPool::NodesPool() :
+        idx(0)
 {
+}
+
+PlayerMCTS::Node* PlayerMCTS::NodesPool::get()
+{
+    if (this->idx % 20000 == 0)
+        this->pool.push_back(std::vector<Node>(20000));
+    Node *res = &this->pool[this->idx / 20000][this->idx % 20000];
+    this->idx++;
+    return res;
 }
 
 uint32_t PlayerMCTS::move(Game *game, Random *rnd, bool print_info)
 {
     Timer timer;
 
-    Node *root = new Node(nullptr, game, -1);
+    NodesPool nodes;
+
+    Node *root = nodes.get();
+    root->set(nullptr, game, -1);
 
     for (uint32_t i = 0; i < this->iterations_max; ++i)
     {
         Game *root_game = game->clone();
         root->endgame = false;
         root->score = 0;
-        search(root, root_game, rnd, false);
+        search(root, root_game, rnd, false, nodes);
         delete root_game;
 
         if (timer.get() >= this->move_duration_ms)
@@ -74,12 +87,12 @@ uint32_t PlayerMCTS::move(Game *game, Random *rnd, bool print_info)
         printf("Move=%d  %d-%d-%d / %d (%d)\n", move, move_node->wins[idx], move_node->wins[1 - idx],
                move_node->visits - move_node->wins[idx] - move_node->wins[1 - idx], move_node->visits, sum_visits);
 
-    kill_tree(root);
+//    kill_tree(root);
 
     return move;
 }
 
-int8_t PlayerMCTS::search(Node *node, Game *game, Random *rnd, bool expand)
+int8_t PlayerMCTS::search(Node *node, Game *game, Random *rnd, bool expand, NodesPool &nodes)
 {
     bool current_player = game->get_player();
     uint8_t player_idx = current_player ? 0 : 1;
@@ -121,7 +134,8 @@ int8_t PlayerMCTS::search(Node *node, Game *game, Random *rnd, bool expand)
 
             game->move_do(move);
 
-            next = new Node(node, game, move);
+            next = nodes.get();
+            next->set(node, game, move);
             node->children.push_back(next);
 
             next_expand = true;
@@ -165,7 +179,7 @@ int8_t PlayerMCTS::search(Node *node, Game *game, Random *rnd, bool expand)
             game->move_do(next->move);
         }
 
-        result = -search(next, game, rnd, next_expand);
+        result = -search(next, game, rnd, next_expand, nodes);
     }
     else
     {
