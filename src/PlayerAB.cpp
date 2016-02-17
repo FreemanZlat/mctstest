@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cstdio>
 
-PlayerAB::PlayerAB(uint32_t move_duration_ms, uint8_t eval_type, bool single_extension, uint32_t max_depth)
+PlayerAB::PlayerAB(uint32_t move_duration_ms, bool single_extension, uint8_t eval_type, uint32_t max_depth)
 {
     this->params.move_duration_ms = move_duration_ms;
     this->params.eval_type = eval_type;
@@ -92,7 +92,7 @@ int32_t PlayerAB::search(uint32_t depth, uint32_t ply, int32_t alpha, int32_t be
     if (depth == 0)
         return game->eval(params.eval_type);
 
-    std::vector<uint32_t> moves = game->moves_get(false);
+    std::vector<uint32_t> moves = game->moves_get(true);
     if (moves.size() == 0)
         return 0;
 

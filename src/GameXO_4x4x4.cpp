@@ -2,6 +2,7 @@
 
 #include "Utils.h"
 
+#include <algorithm>
 #include <cstdio>
 
 std::vector<uint64_t> GameXO_4x4x4::check_lines;
@@ -113,6 +114,15 @@ std::vector<uint32_t> GameXO_4x4x4::moves_get(bool sorted)
             moves.push_back(i);
         mask <<= 1;
     }
+
+    if (sorted)
+    {
+        std::sort(moves.begin(), moves.end(), [](uint32_t a, uint32_t b)
+        {
+            return eval_pst[b] < eval_pst[a];
+        });
+    }
+
     return moves;
 }
 
@@ -178,15 +188,11 @@ bool GameXO_4x4x4::is_win()
     if (this->history.size() == 0)
         return false;
 
-    uint8_t player = this->is_first_player_move ? 1 : 0;
     uint32_t move = this->history.back();
 
     for (uint8_t idx : win_check[move])
-    {
-        bool win = (this->board[player] & check_lines[idx]) == check_lines[idx];
-        if (win)
+        if ((this->board[this->is_first_player_move ? 1 : 0] & check_lines[idx]) == check_lines[idx])
             return true;
-    }
 
     return false;
 }
@@ -219,18 +225,6 @@ int32_t GameXO_4x4x4::eval(uint8_t type)
     int32_t resX = 0, resO = 0;
     if (type == 0)
     {
-        uint64_t mask = 1;
-        for (uint8_t i = 0; i < 64; ++i)
-        {
-            if (this->board[0] & mask)
-                resX += eval_pst[i];
-            else if (this->board[1] & mask)
-                resO += eval_pst[i];
-            mask <<= 1;
-        }
-    }
-    else
-    {
         for (uint64_t mask : check_lines)
         {
             uint64_t maskX = this->board[0] & mask;
@@ -241,6 +235,18 @@ int32_t GameXO_4x4x4::eval(uint8_t type)
             uint8_t bitsO = bits_count(maskO);
             resX += bitsX * bitsX;
             resO += bitsO * bitsO;
+        }
+    }
+    else
+    {
+        uint64_t mask = 1;
+        for (uint8_t i = 0; i < 64; ++i)
+        {
+            if (this->board[0] & mask)
+                resX += eval_pst[i];
+            else if (this->board[1] & mask)
+                resO += eval_pst[i];
+            mask <<= 1;
         }
     }
     int32_t res = resX - resO;

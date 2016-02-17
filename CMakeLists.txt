@@ -10,6 +10,7 @@ set(SOURCES
     src/main.cpp
     src/GameXO.cpp
     src/GameXO_4x4x4.cpp
+    src/GameXO_5.cpp
     src/PlayerAB.cpp
     src/PlayerMinimax.cpp
     src/PlayerMCTS.cpp
