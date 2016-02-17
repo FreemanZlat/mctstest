@@ -164,10 +164,16 @@ void Tournament::play_game(Random *rnd, uint8_t i, uint8_t j, bool print_info)
     if (print_info)
         printf("Game %d x %d : %d\n", this->stats[i]->id, this->stats[j]->id, result);
 
+    if (result == 0 && i != j)
+    {
+        this->stats[i]->score += 1;
+        this->stats[j]->score += 1;
+    }
+
     if (result == 1)
     {
         if (i != j)
-            this->stats[i]->score++;
+            this->stats[i]->score += 2;
         this->stats[i]->winsX[this->stats[j]->id]++;
         this->stats[j]->loses[this->stats[i]->id]++;
     }
@@ -175,7 +181,7 @@ void Tournament::play_game(Random *rnd, uint8_t i, uint8_t j, bool print_info)
     if (result == 2)
     {
         if (i != j)
-            this->stats[j]->score++;
+            this->stats[j]->score += 2;
         this->stats[j]->winsO[this->stats[i]->id]++;
         this->stats[i]->loses[this->stats[j]->id]++;
     }
