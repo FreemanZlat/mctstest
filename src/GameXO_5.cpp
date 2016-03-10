@@ -6,19 +6,22 @@
 
 std::vector<std::bitset<GAME_XO_5_SIZE_2>> GameXO_5::check_lines;
 std::vector<std::vector<uint32_t>> GameXO_5::win_check;
+std::vector<std::bitset<GAME_XO_5_SIZE_2>> GameXO_5::new_moves;
+
 GameXO_5::_init GameXO_5::_initializer;
 
 GameXO_5::_init::_init()
 {
     win_check.resize(GAME_XO_5_SIZE_2);
+    new_moves.resize(GAME_XO_5_SIZE_2);
 
-    for (uint8_t x = 0; x < GAME_XO_5_SIZE; ++x)
-        for (uint8_t y = 0; y < GAME_XO_5_SIZE; ++y)
+    for (int16_t x = 0; x < GAME_XO_5_SIZE; ++x)
+        for (int16_t y = 0; y < GAME_XO_5_SIZE; ++y)
         {
             if (x <= GAME_XO_5_SIZE - 5)
             {
                 std::bitset<GAME_XO_5_SIZE_2> buf;
-                for (uint8_t i = 0; i < 5; ++i)
+                for (int16_t i = 0; i < 5; ++i)
                 {
                     buf.set((x + i) * GAME_XO_5_SIZE + y, true);
                     win_check[(x + i) * GAME_XO_5_SIZE + y].push_back(check_lines.size());
@@ -28,7 +31,7 @@ GameXO_5::_init::_init()
             if (y <= GAME_XO_5_SIZE - 5)
             {
                 std::bitset<GAME_XO_5_SIZE_2> buf;
-                for (uint8_t i = 0; i < 5; ++i)
+                for (int16_t i = 0; i < 5; ++i)
                 {
                     buf.set(x * GAME_XO_5_SIZE + y + i, true);
                     win_check[x * GAME_XO_5_SIZE + y + i].push_back(check_lines.size());
@@ -38,7 +41,7 @@ GameXO_5::_init::_init()
             if (x <= GAME_XO_5_SIZE - 5 && y <= GAME_XO_5_SIZE - 5)
             {
                 std::bitset<GAME_XO_5_SIZE_2> buf1, buf2;
-                for (uint8_t i = 0; i < 5; ++i)
+                for (int16_t i = 0; i < 5; ++i)
                 {
                     buf1.set((x + i) * GAME_XO_5_SIZE + y + i, true);
                     buf2.set((x + i) * GAME_XO_5_SIZE + y - i + 4, true);
@@ -48,6 +51,18 @@ GameXO_5::_init::_init()
                 check_lines.push_back(buf1);
                 check_lines.push_back(buf2);
             }
+
+            for (int16_t x1 = -GAME_XO_5_MOVES_WINDOW; x1 <= GAME_XO_5_MOVES_WINDOW; ++x1)
+            {
+                if (x + x1 < 0 || x + x1 >= GAME_XO_5_SIZE)
+                    continue;
+                for (int16_t y1 = -GAME_XO_5_MOVES_WINDOW; y1 <= GAME_XO_5_MOVES_WINDOW; ++y1)
+                {
+                    if (y + y1 < 0 || y + y1 >= GAME_XO_5_SIZE)
+                        continue;
+                    new_moves[x * GAME_XO_5_SIZE + y].set((x + x1) * GAME_XO_5_SIZE + y + y1, true);
+                }
+            }
         }
 }
 
@@ -56,7 +71,9 @@ GameXO_5::GameXO_5() :
 {
     this->board[0].reset();
     this->board[1].reset();
-    this->history.reserve(64);
+    this->history_moves.reserve(GAME_XO_5_SIZE_2);
+    this->history_masks.reserve(GAME_XO_5_SIZE_2 + 1);
+    this->history_masks.push_back(new_moves[GAME_XO_5_SIZE_2 / 2]);
 }
 
 GameXO_5::~GameXO_5()
@@ -69,19 +86,20 @@ Game* GameXO_5::clone()
     game->is_first_player_move = this->is_first_player_move;
     game->board[0] = this->board[0];
     game->board[1] = this->board[1];
-    game->history = this->history;
+    game->history_moves = this->history_moves;
+    game->history_masks = this->history_masks;
     return game;
 }
 
 std::vector<uint32_t> GameXO_5::moves_get(bool sorted)
 {
-    std::bitset<GAME_XO_5_SIZE_2> board_mask = this->board[0] | this->board[1];
+    auto board_mask = this->history_masks.back() & ~(this->board[0] | this->board[1]);
 
     std::vector<uint32_t> moves;
-    moves.reserve(GAME_XO_5_SIZE_2);
+    moves.reserve(board_mask.count());
 
     for (uint32_t i = 0; i < GAME_XO_5_SIZE_2; ++i)
-        if (!board_mask[i])
+        if (board_mask[i])
             moves.push_back(i);
 
     return moves;
@@ -94,67 +112,52 @@ void GameXO_5::move_do(const uint32_t move)
     }
 
     this->board[this->is_first_player_move ? 0 : 1].set(move, true);
-    this->history.push_back(move);
+    this->history_moves.push_back(move);
+    this->history_masks.push_back(this->history_masks.back() | new_moves[move]);
     this->is_first_player_move = !this->is_first_player_move;
 }
 
 void GameXO_5::move_undo(const uint32_t move)
 {
     if (move < 0 || move >= GAME_XO_5_SIZE_2 || (!this->board[0][move] && !this->board[1][move])
-            || this->history.size() == 0 || this->history.back() != move)
+            || this->history_moves.size() == 0 || this->history_moves.back() != move)
     {
     }
 
     this->board[this->is_first_player_move ? 1 : 0].set(move, false);
-    this->history.pop_back();
+    this->history_moves.pop_back();
+    this->history_masks.pop_back();
     this->is_first_player_move = !this->is_first_player_move;
 }
 
 bool GameXO_5::move_random(Random *rnd)
 {
-//    uint64_t board_mask = ~(this->board[0] | this->board[1]);
-//    if (board_mask == 0)
-//        return false;
-//
-//    uint8_t move_num = rnd->get() % (64 - this->history.size());
-//    uint64_t move_mask = ~(board_mask - 1) & board_mask;
-//    for (uint8_t i = 0; i < move_num; ++i)
-//    {
-//        board_mask &= ~move_mask;
-//        move_mask = ~(board_mask - 1) & board_mask;
-//    }
-//
-//    uint32_t move = 0, num = 32;
-//    uint64_t mask = 0xFFFFFFFF;
-//    while (num != 0)
-//    {
-//        if ((move_mask & mask) == 0)
-//        {
-//            move += num;
-//            move_mask >>= num;
-//        }
-//
-//        num >>= 1;
-//        mask >>= num;
-//    }
-//
-//    this->move_do(move);
-//    return true;
-
-    std::vector<uint32_t> moves = this->moves_get(false);
-    if (moves.empty())
+    auto board_mask = this->history_masks.back() & ~(this->board[0] | this->board[1]);
+    uint8_t size = board_mask.count();
+    if (size == 0)
         return false;
 
-    this->move_do(moves[rnd->get() % moves.size()]);
+    uint8_t move_num = rnd->get() % size;
+    uint32_t move = 0;
+
+    for (uint32_t i = 0; i < GAME_XO_5_SIZE_2; ++i)
+        if (board_mask[i])
+            if (move_num-- == 0)
+            {
+                move = i;
+                break;
+            }
+
+    this->move_do(move);
     return true;
 }
 
 bool GameXO_5::is_win()
 {
-    if (this->history.size() == 0)
+    if (this->history_moves.size() == 0)
         return false;
 
-    uint32_t move = this->history.back();
+    uint32_t move = this->history_moves.back();
 
     for (uint32_t idx : win_check[move])
         if ((this->board[this->is_first_player_move ? 1 : 0] & check_lines[idx]) == check_lines[idx])

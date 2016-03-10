@@ -4,8 +4,9 @@
 
 #include <bitset>
 
-#define GAME_XO_5_SIZE      10
+#define GAME_XO_5_SIZE      15
 #define GAME_XO_5_SIZE_2    GAME_XO_5_SIZE*GAME_XO_5_SIZE
+#define GAME_XO_5_MOVES_WINDOW 2
 
 class GameXO_5 : public Game
 {
@@ -27,9 +28,11 @@ class GameXO_5 : public Game
  private:
     bool is_first_player_move;
     std::bitset<GAME_XO_5_SIZE_2> board[2];
-    std::vector<uint32_t> history;
+    std::vector<uint32_t> history_moves;
+    std::vector<std::bitset<GAME_XO_5_SIZE_2>> history_masks;
     static std::vector<std::bitset<GAME_XO_5_SIZE_2>> check_lines;
     static std::vector<std::vector<uint32_t>> win_check;
+    static std::vector<std::bitset<GAME_XO_5_SIZE_2>> new_moves;
     static struct _init
     {
         _init();
